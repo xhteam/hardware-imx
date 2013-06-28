@@ -40,6 +40,7 @@
 
 #include "audio_hardware.h"
 #include "config_wm8962.h"
+#include "config_rt5633.h"
 #include "config_wm8958.h"
 #include "config_hdmi.h"
 #include "config_usbaudio.h"
@@ -97,6 +98,7 @@
 struct audio_card *audio_card_list[SUPPORT_CARD_NUM] = {
     &wm8958_card,
     &wm8962_card,
+    &rt5633_card,
     &hdmi_card,
     &usbaudio_card,
     &spdif_card,
