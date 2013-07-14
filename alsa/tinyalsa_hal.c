@@ -47,6 +47,7 @@
 #include "config_nullcard.h"
 #include "config_spdif.h"
 #include "config_cs42888.h"
+#include "config_rt5625.h"
 
 
 /* ALSA ports for IMX */
@@ -92,10 +93,11 @@
 #define PRODUCT_NAME_PROPERTY   "ro.product.name"
 #define PRODUCT_DEVICE_IMX      "imx"
 #define PRODUCT_DEVICE_AUTO     "sabreauto"
-#define SUPPORT_CARD_NUM        7
+#define SUPPORT_CARD_NUM        10
 
 /*"null_card" must be in the end of this array*/
 struct audio_card *audio_card_list[SUPPORT_CARD_NUM] = {
+	&rt5625_card,
     &wm8958_card,
     &wm8962_card,
     &rt5633_card,
