@@ -69,6 +69,85 @@ LOCAL_SRC_FILES := $(bluetooth_module_file)
 include $(BUILD_PREBUILT)
 
 
+#
+#mlan2040coex
+#
+include $(CLEAR_VARS)
+LOCAL_MODULE_PATH:=$(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE := mlan2040coex
+LOCAL_SRC_FILES := \
+	wlan_src/mapp/mlan2040coex/mlan2040coex.c \
+	wlan_src/mapp/mlan2040coex/mlan2040misc.c
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_EXECUTABLE)
+
+#
+#mlanconfig
+#
+include $(CLEAR_VARS)
+LOCAL_MODULE_PATH:=$(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE := mlanconfig
+LOCAL_SRC_FILES := \
+	wlan_src/mapp/mlanconfig/mlanconfig.c \
+	wlan_src/mapp/mlanconfig/mlanhostcmd.c \
+	wlan_src/mapp/mlanconfig/mlanmisc.c 
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_EXECUTABLE)
+
+#
+#mlanevent
+#
+include $(CLEAR_VARS)
+LOCAL_MODULE_PATH:=$(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE := mlanevent
+LOCAL_SRC_FILES := \
+	wlan_src/mapp/mlanevent/mlanevent.c 
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_EXECUTABLE)
+
+#
+#mlanutl
+#
+include $(CLEAR_VARS)
+LOCAL_CFLAGS:= -DSTA_SUPPORT
+LOCAL_MODULE_PATH:=$(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE := mlanutl
+LOCAL_SRC_FILES := \
+	wlan_src/mapp/mlanutl/mlanutl.c 
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_EXECUTABLE)
+
+
+#
+#uaputl
+#
+include $(CLEAR_VARS)
+LOCAL_MODULE_PATH:=$(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE := uaputl
+LOCAL_SRC_FILES := \
+	wlan_src/mapp/uaputl/uaputl.c \
+	wlan_src/mapp/uaputl/uapcmd.c \
+	wlan_src/mapp/uaputl/uaphostcmd.c 
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_EXECUTABLE)
+
+
+#
+#wifidirectutl
+#
+include $(CLEAR_VARS)
+LOCAL_MODULE_PATH:=$(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE := wifidirectutl
+LOCAL_SRC_FILES := \
+	wlan_src/mapp/wifidirectutl/wifidirectutl.c \
+	wlan_src/mapp/wifidirectutl/wifi_display.c 
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_EXECUTABLE)
+
+
+#
+#Extra wpa_supplicant_8_lib
+#
 include $(call all-makefiles-under,$(LOCAL_PATH))
 
 endif
