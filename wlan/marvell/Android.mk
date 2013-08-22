@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-ifeq ($(BOARD_WLAN_DEVICE),mrvl8787)
 LOCAL_PATH:= $(call my-dir)
 
 MRVL_ANDROID_SRC_BASE:=$(LOCAL_PATH)
@@ -150,5 +149,4 @@ include $(BUILD_EXECUTABLE)
 #
 include $(call all-makefiles-under,$(LOCAL_PATH))
 
-endif
 
