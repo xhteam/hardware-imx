@@ -66,6 +66,7 @@ INSTALLDIR ?= /tftpboot/pxa3xx/root
 # Default values of ARCH for specific platform are set below.
 ARCH ?= arm
 
+SOURCE_DIR ?=$(PWD)
 
 EXTRA_CFLAGS += -I$(KERNELDIR)/include
 
@@ -112,7 +113,7 @@ mbt8xxx-objs := $(BTOBJS)
 # Otherwise we were called directly from the command line; invoke the kernel build system.
 else
 default:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+	$(MAKE) -C $(KERNELDIR) M=$(SOURCE_DIR) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
 endif
 
 ###############################################################
@@ -142,30 +143,30 @@ build:		echo default
 	cp -f app/fm_app/fmapp $(BINDIR);
 
 clean:
-	-find . -name "*.o" -exec rm {} \;
-	-find . -name "*.ko" -exec rm {} \;
-	-find . -name ".*.cmd" -exec rm {} \;
-	-find . -name "*.mod.c" -exec rm {} \;
-	-find . -name "*.symvers" -exec rm {} \;
-	-find . -name "modules.order" -exec rm {} \;
-	-rm -rf .tmp_versions
+	@-find . -name "*.o" -exec rm {} \;
+	@-find . -name "*.ko" -exec rm {} \;
+	@-find . -name ".*.cmd" -exec rm {} \;
+	@-find . -name "*.mod.c" -exec rm {} \;
+	@-find . -name "*.symvers" -exec rm {} \;
+	@-find . -name "modules.order" -exec rm {} \;
+	@-rm -rf .tmp_versions
 	$(MAKE) -C app/fm_app $@
 
 install: default
 
 distclean:
-	-find . -name "*.o" -exec rm {} \;
-	-find . -name "*.orig" -exec rm {} \;
-	-find . -name "*.swp" -exec rm {} \;
-	-find . -name "*.*~" -exec rm {} \;
-	-find . -name "*~" -exec rm {} \;
-	-find . -name "*.d" -exec rm {} \;
-	-find . -name "*.a" -exec rm {} \;
-	-find . -name "tags" -exec rm {} \;
-	-find . -name ".*" -exec rm -rf 2> /dev/null \;
-	-find . -name "*.ko" -exec rm {} \;
-	-find . -name ".*.cmd" -exec rm {} \;
-	-find . -name "*.mod.c" -exec rm {} \;
-	-rm -rf .tmp_versions
+	@-find . -name "*.o" -exec rm {} \;
+	@-find . -name "*.orig" -exec rm {} \;
+	@-find . -name "*.swp" -exec rm {} \;
+	@-find . -name "*.*~" -exec rm {} \;
+	@-find . -name "*~" -exec rm {} \;
+	@-find . -name "*.d" -exec rm {} \;
+	@-find . -name "*.a" -exec rm {} \;
+	@-find . -name "tags" -exec rm {} \;
+	@-find . -name ".*" -exec rm -rf 2> /dev/null \;
+	@-find . -name "*.ko" -exec rm {} \;
+	@-find . -name ".*.cmd" -exec rm {} \;
+	@-find . -name "*.mod.c" -exec rm {} \;
+	@-rm -rf .tmp_versions
 	$(MAKE) -C app/fm_app $@
 # End of file;
