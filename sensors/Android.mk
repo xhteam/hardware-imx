@@ -1,3 +1,4 @@
 ifeq ($(BOARD_HAS_IMX_SENSOR),true)
-    include $(call all-subdir-makefiles,marvell)
+LOCAL_PATH := $(my-dir)
+include $(call first-makefiles-under,$(LOCAL_PATH))
 endif

@@ -79,6 +79,7 @@ static const struct sensor_t sSensorList[] = {
           "Freescale Semiconductor Inc.",
           1, SENSORS_ORIENTATION_HANDLE,
           SENSOR_TYPE_ORIENTATION, 360.0f, CONVERT_O, 0.50f, 100000, { } },
+		#ifdef SENSOR_MPL3115
         { "MPL3115 Pressure sensor",
           "Freescale Semiconductor Inc.",
           1, SENSORS_PRESSURE_HANDLE,
@@ -87,10 +88,13 @@ static const struct sensor_t sSensorList[] = {
           "Freescale Semiconductor Inc.",
           1, SENSORS_TEMPERATURE_HANDLE,
           SENSOR_TYPE_TEMPERATURE, 85.0f, CONVERT_TEMPERATURE, 0.35f, 0, { } },
+        #endif
+		#ifdef SENSOR_ISL29023
         { "ISL29023 Light sensor",
           "Intersil",
           1, SENSORS_LIGHT_HANDLE,
           SENSOR_TYPE_LIGHT, 16000.0f, 1.0f, 0.35f, 0, { } },
+        #endif
 };
 
 
@@ -135,7 +139,9 @@ private:
     enum {
         accel           = 0,
         mag 		    = 1,
+        #ifdef SENSOR_MPL3115
         pressure        = 2,
+        #endif
         numSensorDrivers,
         numFds,
     };
@@ -153,9 +159,11 @@ private:
           	case ID_M:
           	case ID_O:
             	return mag;
+			#ifdef SENSOR_MPL3115
 			case ID_P:
 			case ID_T:
 				 return pressure;
+			#endif
         }
         return -EINVAL;
     }
@@ -175,11 +183,12 @@ sensors_poll_context_t::sensors_poll_context_t()
 	mPollFds[mag].events = POLLIN;
 	mPollFds[mag].revents = 0;
 
+	#ifdef SENSOR_MPL3115
 	mSensors[pressure] = new PressSensor();
 	mPollFds[pressure].fd = mSensors[pressure]->getFd();
 	mPollFds[pressure].events = POLLIN;
 	mPollFds[pressure].revents = 0;
-	
+	#endif
 	
     int wakeFds[2];
     int result = pipe(wakeFds);
