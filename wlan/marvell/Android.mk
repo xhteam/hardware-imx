@@ -60,6 +60,7 @@ $(mbt_cleanup) :
 mbt_module_file :=mbt_src/bt8xxx.ko
 $(MRVL_ANDROID_SRC_BASE)/$(mbt_module_file):$(mbt_cleanup) $(TARGET_PREBUILT_KERNEL) $(ACP)
 	$(MAKE) -C $(MRVL_ANDROID_SRC_MBT) ARCH=arm SOURCE_DIR=$(MRVL_ANDROID_ROOT)/$(MRVL_ANDROID_SRC_MBT) CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	default 
+	$(ACP) -fpt $(MRVL_ANDROID_SRC_MBT)/bt8xxx.ko $(TARGET_OUT)/lib/modules
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := bt8xxx.ko
@@ -79,6 +80,7 @@ $(mbtc_cleanup) :
 mbtc_module_file :=mbtc_src/mbt8xxx.ko
 $(MRVL_ANDROID_SRC_BASE)/$(mbtc_module_file):$(mbtc_cleanup) $(TARGET_PREBUILT_KERNEL) $(ACP)
 	$(MAKE) -C $(MRVL_ANDROID_SRC_MBTC) ARCH=arm SOURCE_DIR=$(MRVL_ANDROID_ROOT)/$(MRVL_ANDROID_SRC_MBTC) CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	default 
+	$(ACP) -fpt $(MRVL_ANDROID_SRC_MBTC)/mbt8xxx.ko $(TARGET_OUT)/lib/modules
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := mbt8xxx.ko
