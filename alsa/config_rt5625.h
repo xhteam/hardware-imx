@@ -21,32 +21,15 @@
 #include "audio_hardware.h"
 
 
-#define MIXER_RT5625_SPEAKER_VOLUME                 "Speaker Volume"
-#define MIXER_RT5625_SPEAKER_SWITCH                 "Speaker Switch"
-#define MIXER_RT5625_HEADPHONE_VOLUME               "Headphone Volume"
-#define MIXER_RT5625_HEADPHONE_SWITCH               "Headphone Switch"
 
-#define MIXER_RT5625_CAPTURE_SWITCH                 "Capture Switch"
-#define MIXER_RT5625_CAPTURE_VOLUME                 "Capture Volume"
-
-#define MIXER_RT5625_INPGAR_IN3R_SWITCH             "INPGAR IN3R Switch"
-#define MIXER_RT5625_MIXINR_IN3R_SWITCH             "MIXINR IN3R Switch"
-#define MIXER_RT5625_MIXINR_IN3R_VOLUME             "MIXINR IN3R Volume"
-
-#define MIXER_RT5625_MIXINR_PGA_SWITCH              "MIXINR PGA Switch"
-#define MIXER_RT5625_MIXINR_PGA_VOLUME              "MIXINR PGA Volume"
-
-#define MIXER_RT5625_DIGITAL_CAPTURE_VOLUME         "Digital Capture Volume"
-
-#define MIXER_RT5625_DIGITAL_PLAYBACK_VOLUME        "Digital Playback Volume"
 
 
 /* These are values that never change */
 static struct route_setting defaults_rt5625[] = {
     /* general */
     {
-        .ctl_name = MIXER_RT5625_DIGITAL_PLAYBACK_VOLUME,
-        .intval = 96,
+        .ctl_name = "SPKOUT Playback Volume",
+        .intval = 23,
     },
     {
         .ctl_name = NULL,
@@ -61,12 +44,16 @@ static struct route_setting bt_output_rt5625[] = {
 
 static struct route_setting speaker_output_rt5625[] = {
     {
-        .ctl_name = MIXER_RT5625_SPEAKER_SWITCH,
+        .ctl_name = "SPKOUT Playback Switch",
         .intval = 1,
     },
     {
-        .ctl_name = MIXER_RT5625_SPEAKER_VOLUME,
-        .intval = 121,
+        .ctl_name = "SPK Mixer DAC Mixer Playback Switch",
+        .intval = 1,
+    },    
+    {
+        .ctl_name = "SPKOUT Mux",
+        .intval = 2,
     },
     {
         .ctl_name = NULL,
@@ -75,13 +62,25 @@ static struct route_setting speaker_output_rt5625[] = {
 
 static struct route_setting hs_output_rt5625[] = {
     {
-        .ctl_name = MIXER_RT5625_HEADPHONE_SWITCH,
+        .ctl_name = "Right HP Mixer HIFI DAC Playback Switch",
         .intval = 1,
     },
     {
-        .ctl_name = MIXER_RT5625_HEADPHONE_VOLUME,
-        .intval = 121,
+        .ctl_name = "Left HP Mixer HIFI DAC Playback Switch",
+        .intval = 1,
+    },    
+    {
+        .ctl_name = "HPROUT Mux",
+        .intval = 1,
     },
+	{
+		.ctl_name = "HPLOUT Mux",
+		.intval = 1,
+	},    
+	{
+		.ctl_name = "HPOUT Playback Switch ",
+		.intval = 1,
+	},
     {
         .ctl_name = NULL,
     },
@@ -93,6 +92,8 @@ static struct route_setting earpiece_output_rt5625[] = {
     },
 };
 
+
+//FIXME
 static struct route_setting vx_hs_mic_input_rt5625[] = {
     {
         .ctl_name = NULL,
@@ -100,45 +101,14 @@ static struct route_setting vx_hs_mic_input_rt5625[] = {
 };
 
 
+//FIXME
 static struct route_setting mm_main_mic_input_rt5625[] = {
-    {
-        .ctl_name = MIXER_RT5625_CAPTURE_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_RT5625_CAPTURE_VOLUME,
-        .intval = 63,
-    },
-    {
-        .ctl_name = MIXER_RT5625_DIGITAL_CAPTURE_VOLUME,
-        .intval = 127,
-    },/*
-    {
-        .ctl_name = MIXER_WM8962_INPGAR_IN3R_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_WM8962_MIXINR_PGA_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_WM8962_MIXINR_PGA_VOLUME,
-        .intval = 7,
-    },*/
-    {
-        .ctl_name = MIXER_RT5625_MIXINR_IN3R_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_RT5625_MIXINR_IN3R_VOLUME,
-        .intval = 7,
-    },
     {
         .ctl_name = NULL,
     },
 };
 
-
+//FIXME
 static struct route_setting vx_main_mic_input_rt5625[] = {
     {
         .ctl_name = NULL,
@@ -147,38 +117,7 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
 
 /*hs_mic exchanged with main mic for sabresd, because the the main is no implemented*/
 static struct route_setting mm_hs_mic_input_rt5625[] = {
-    {
-        .ctl_name = MIXER_RT5625_CAPTURE_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_RT5625_CAPTURE_VOLUME,
-        .intval = 63,
-    },
-    {
-        .ctl_name = MIXER_RT5625_DIGITAL_CAPTURE_VOLUME,
-        .intval = 127,
-    },/*
-    {
-        .ctl_name = MIXER_WM8962_INPGAR_IN3R_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_WM8962_MIXINR_PGA_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_WM8962_MIXINR_PGA_VOLUME,
-        .intval = 7,
-    },*/
-    {
-        .ctl_name = MIXER_RT5625_MIXINR_IN3R_SWITCH,
-        .intval = 1,
-    },
-    {
-        .ctl_name = MIXER_RT5625_MIXINR_IN3R_VOLUME,
-        .intval = 7,
-    },
+
     {
         .ctl_name = NULL,
     },
