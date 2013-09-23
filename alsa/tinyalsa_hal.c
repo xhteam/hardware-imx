@@ -397,7 +397,7 @@ static void select_output_device(struct imx_audio_device *adev)
         }
     }
     /*if mode = AUDIO_MODE_IN_CALL*/
-    ALOGV("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
+    ALOGD("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
     /* select output stage */
     for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, bt_on);
