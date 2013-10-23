@@ -31,6 +31,11 @@ static struct route_setting defaults_rt5625[] = {
         .ctl_name = "SPKOUT Playback Volume",
         .intval = 26,
     },
+	{
+		.ctl_name = "HPOUT Playback Volume",
+		.intval = 23,
+	},
+    
     {
         .ctl_name = NULL,
     },
@@ -105,6 +110,26 @@ static struct route_setting vx_hs_mic_input_rt5625[] = {
 //FIXME
 static struct route_setting mm_main_mic_input_rt5625[] = {
     {
+        .ctl_name = "Right Rec Mixer Mic1 Capture Switch",
+		.intval = 1,
+    },
+    {
+        .ctl_name = "Left Rec Mixer Mic1 Capture Switch",
+		.intval = 1,
+    },
+	{
+		.ctl_name = "Mic1 Amp Boost Type",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "Mic1 Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "PCM Capture Volume",
+		.intval = 20,
+	},
+    {
         .ctl_name = NULL,
     },
 };
@@ -116,7 +141,6 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
     },
 };
 
-/*hs_mic exchanged with main mic for sabresd, because the the main is no implemented*/
 static struct route_setting mm_hs_mic_input_rt5625[] = {
 
     {
