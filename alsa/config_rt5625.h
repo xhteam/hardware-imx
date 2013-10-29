@@ -142,7 +142,26 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
 };
 
 static struct route_setting mm_hs_mic_input_rt5625[] = {
-
+    {
+        .ctl_name = "Right Rec Mixer Mic2 Capture Switch",
+		.intval = 1,
+    },
+    {
+        .ctl_name = "Left Rec Mixer Mic2 Capture Switch",
+		.intval = 1,
+    },
+	{
+		.ctl_name = "Mic2 Amp Boost Type",
+		.intval = 0,
+	},
+	{
+		.ctl_name = "Mic2 Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "PCM Capture Volume",
+		.intval = 20,
+	},
     {
         .ctl_name = NULL,
     },

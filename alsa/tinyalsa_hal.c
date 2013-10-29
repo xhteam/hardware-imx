@@ -471,6 +471,8 @@ static void select_input_device(struct imx_audio_device *adev)
         main_mic_on = adev->in_device & AUDIO_DEVICE_IN_BUILTIN_MIC;
     }
 
+   ALOGD("bt_on %d,headset %d ,main_mic_on %d, sub_mic_on %d, \n",bt_on , headset_on, main_mic_on, sub_mic_on);
+
    /* TODO: check how capture is possible during voice calls or if
     * both use cases are mutually exclusive.
     */
