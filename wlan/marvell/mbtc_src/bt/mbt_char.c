@@ -112,7 +112,7 @@ mbtchar_chown(char *name, uid_t user, gid_t group)
 		ret = kern_path(name, LOOKUP_FOLLOW, &path);
 		if (++retrycount >= 10) {
 			PRINTM(ERROR,
-			       "mbtchar_chown(): fail to get kern_path\n");
+			       "mbtchar_chown(): fail to get kern_path of %s\n",name);
 			LEAVE();
 			return -EFAULT;
 		}

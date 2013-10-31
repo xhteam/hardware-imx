@@ -199,14 +199,49 @@ static char *wpa_driver_get_country_code(int channels)
 	return country;
 }
 
-static int wpa_driver_set_backgroundscan_params(void *priv)
+#ifndef HOSTAPD
+#define WEXT_BGSCAN_HEADER           "BGSCAN-CONFIG "
+#define WEXT_BGSCAN_HEADER_SIZE      14
+#define WEXT_SSID_AMOUNT             16
+#define WEXT_BGCAN_BUF_LEN           720
+#define WEXT_CSCAN_SSID_SECTION      'S'
+#define SSID_MAX_SIZE                32
+#define WEXT_BGSCAN_RSSI_SECTION     'R'
+#define WEXT_BGSCAN_INTERVAL_SECTION 'T'
+#define WEXT_BGSCAN_INTERVAL_DEF     30
+#define WEXT_BGSCAN_REPEAT_SECTION   'E'
+#define WEXT_BGSCAN_REPEAT_DEF       5
+
+static char *getop(char *s, int *first_time)
 {
-	struct wpa_driver_wext_data *drv = priv;
+	const char delim[] = " \t\n";
+	char *p;
+	if (*first_time){
+		p = strtok(s, delim);
+		*first_time = FALSE;
+	}
+	else{
+		p = strtok(NULL, delim);
+	}
+	return (p);
+}
+
+static int wpa_driver_set_backgroundscan_params(void *priv, char *cmd)
+{
+	struct i802_bss *bss = priv;
+	struct wpa_driver_nl80211_data *drv = bss->drv;
+	struct ifreq ifr;
+	android_wifi_priv_cmd priv_cmd;
 	struct wpa_supplicant *wpa_s;
-	struct iwreq iwr;
 	int ret = 0, i = 0, bp;
-	char buf[WEXT_PNO_MAX_COMMAND_SIZE];
+	char buf[WEXT_BGCAN_BUF_LEN];
 	struct wpa_ssid *ssid_conf;
+	int first_time = TRUE;
+	char *opstr = NULL;
+	char *ptr = NULL;
+	int find_ssid = 0;
+	int find_interval = 0;
+	int find_repeat = 0;
 
 	if (drv == NULL) {
 		wpa_printf(MSG_ERROR, "%s: drv is NULL. Exiting", __func__);
@@ -223,60 +258,82 @@ static int wpa_driver_set_backgroundscan_params(void *priv)
 	}
 	ssid_conf = wpa_s->conf->ssid;
 
-	bp = WEXT_PNOSETUP_HEADER_SIZE;
-	os_memcpy(buf, WEXT_PNOSETUP_HEADER, bp);
-	buf[bp++] = WEXT_PNO_TLV_PREFIX;
-	buf[bp++] = WEXT_PNO_TLV_VERSION;
-	buf[bp++] = WEXT_PNO_TLV_SUBVERSION;
-	buf[bp++] = WEXT_PNO_TLV_RESERVED;
+	bp = WEXT_BGSCAN_HEADER_SIZE;
+	os_memcpy(buf, WEXT_BGSCAN_HEADER, bp);
 
-	while ((i < WEXT_PNO_AMOUNT) && (ssid_conf != NULL)) {
-		/* Check that there is enough space needed for 1 more SSID, the other sections and null termination */
-		if ((bp + WEXT_PNO_SSID_HEADER_SIZE + IW_ESSID_MAX_SIZE + WEXT_PNO_NONSSID_SECTIONS_SIZE + 1) >= (int)sizeof(buf))
-			break;
-		if ((!ssid_conf->disabled) && (ssid_conf->ssid_len <= IW_ESSID_MAX_SIZE)){
-			wpa_printf(MSG_DEBUG, "For PNO Scan: %s", ssid_conf->ssid);
-			buf[bp++] = WEXT_PNO_SSID_SECTION;
-			buf[bp++] = ssid_conf->ssid_len;
-			os_memcpy(&buf[bp], ssid_conf->ssid, ssid_conf->ssid_len);
-			bp += ssid_conf->ssid_len;
+	opstr = getop(cmd, &first_time);
+	while ((opstr = getop(cmd, &first_time)) != NULL) {
+		if((ptr = strstr(opstr, "SSID=")) != NULL) {
+			find_ssid = 1;
+			ptr = ptr + strlen("SSID=");
+			buf[bp++] = WEXT_CSCAN_SSID_SECTION;
+			buf[bp++] = strlen(ptr);
+			os_memcpy(&buf[bp], ptr, strlen(ptr));
+			bp += strlen(ptr);
 			i++;
 		}
-		ssid_conf = ssid_conf->next;
+		else if((ptr = strstr(opstr, "RSSI=")) != NULL) {
+			ptr = ptr + strlen("RSSI=");
+			buf[bp++] = WEXT_BGSCAN_RSSI_SECTION;
+			buf[bp++] = atoi(ptr);
+		}
+		else if((ptr = strstr(opstr, "INTERVAL=")) != NULL) {
+			find_interval = 1;
+			ptr = ptr + strlen("INTERVAL=");
+			buf[bp++] = WEXT_BGSCAN_INTERVAL_SECTION;
+			buf[bp++] = (u8)atoi(ptr);
+			buf[bp++] = (u8)(atoi(ptr) >> 8);
+		}
+		else if((ptr = strstr(opstr, "REPEAT=")) != NULL) {
+			find_repeat = 1;
+			ptr = ptr + strlen("REPEAT=");
+			buf[bp++] = WEXT_BGSCAN_REPEAT_SECTION;
+			buf[bp++] = (u8)atoi(ptr);
+		}
 	}
 
-	buf[bp++] = WEXT_PNO_SCAN_INTERVAL_SECTION;
-	os_snprintf(&buf[bp], WEXT_PNO_SCAN_INTERVAL_LENGTH + 1, "%x", WEXT_PNO_SCAN_INTERVAL);
-	bp += WEXT_PNO_SCAN_INTERVAL_LENGTH;
-
-	buf[bp++] = WEXT_PNO_REPEAT_SECTION;
-	os_snprintf(&buf[bp], WEXT_PNO_REPEAT_LENGTH + 1, "%x", WEXT_PNO_REPEAT);
-	bp += WEXT_PNO_REPEAT_LENGTH;
-
-	buf[bp++] = WEXT_PNO_MAX_REPEAT_SECTION;
-	os_snprintf(&buf[bp], WEXT_PNO_MAX_REPEAT_LENGTH + 1, "%x", WEXT_PNO_MAX_REPEAT);
-	bp += WEXT_PNO_MAX_REPEAT_LENGTH + 1;
-
-	os_memset(&iwr, 0, sizeof(iwr));
-	os_strncpy(iwr.ifr_name, drv->ifname, IFNAMSIZ);
-	iwr.u.data.pointer = buf;
-	iwr.u.data.length = bp;
-
-	ret = ioctl(drv->ioctl_sock, SIOCSIWPRIV, &iwr);
-
-	if (ret < 0) {
-		wpa_printf(MSG_ERROR, "ioctl[SIOCSIWPRIV] (pnosetup): %d", ret);
-		drv->errors++;
-		if (drv->errors > DRV_NUMBER_SEQUENTIAL_ERRORS) {
-			drv->errors = 0;
-			wpa_msg(drv->ctx, MSG_INFO, WPA_EVENT_DRIVER_STATE "HANGED");
+	if(!find_ssid) {
+		while ((i < WEXT_SSID_AMOUNT) && (ssid_conf != NULL)) {
+			if ((!ssid_conf->disabled) && (ssid_conf->ssid_len <= SSID_MAX_SIZE)){
+				wpa_printf(MSG_DEBUG, "For BG Scan: %s", ssid_conf->ssid);
+				buf[bp++] = WEXT_CSCAN_SSID_SECTION;
+				buf[bp++] = ssid_conf->ssid_len;
+				os_memcpy(&buf[bp], ssid_conf->ssid, ssid_conf->ssid_len);
+				bp += ssid_conf->ssid_len;
+				i++;
+			}
+			ssid_conf = ssid_conf->next;
 		}
+	}
+
+	if(!find_interval){
+		buf[bp++] = WEXT_BGSCAN_INTERVAL_SECTION;
+		buf[bp++] = WEXT_BGSCAN_INTERVAL_DEF;
+		buf[bp++] = (WEXT_BGSCAN_INTERVAL_DEF >> 8);
+	}
+
+	if(!find_repeat){
+		buf[bp++] = WEXT_BGSCAN_REPEAT_SECTION;
+		buf[bp++] = WEXT_BGSCAN_REPEAT_DEF;
+	}
+
+	memset(&ifr, 0, sizeof(ifr));
+	memset(&priv_cmd, 0, sizeof(priv_cmd));
+	os_strncpy(ifr.ifr_name, bss->ifname, IFNAMSIZ);
+
+	priv_cmd.buf = buf;
+	priv_cmd.used_len = WEXT_BGCAN_BUF_LEN;
+	priv_cmd.total_len = WEXT_BGCAN_BUF_LEN;
+	ifr.ifr_data = &priv_cmd;
+
+	if ((ret = ioctl(drv->global->ioctl_sock, SIOCDEVPRIVATE + 14, &ifr)) < 0) {
+		wpa_printf(MSG_ERROR, "ioctl[SIOCSIWPRIV] (bgscan config): %d", ret);
 	} else {
-		drv->errors = 0;
+		wpa_printf(MSG_DEBUG, "%s %s len = %d, %d", __func__, buf, ret, strlen(buf));
 	}
 	return ret;
-
 }
+#endif
 
 int wpa_driver_wext_driver_cmd( void *priv, char *cmd, char *buf, size_t buf_len )
 {
@@ -306,16 +363,19 @@ int wpa_driver_wext_driver_cmd( void *priv, char *cmd, char *buf, size_t buf_len
 		wpa_printf(MSG_DEBUG,"Reload command");
 		wpa_msg(drv->ctx, MSG_INFO, WPA_EVENT_DRIVER_STATE "HANGED");
 		return ret;
-	} else if( os_strcasecmp(cmd, "BGSCAN-START") == 0 ) {
+#ifndef HOSTAPD
+	} else if( os_strncasecmp(cmd, "BGSCAN-START") == 0 ) {
+		/* Issue a command 'BGSCAN-CONFIG' to driver */
 		ret = wpa_driver_set_backgroundscan_params(priv);
 		if (ret < 0) {
-			return ret;
+			wpa_printf(MSG_ERROR, "%s: failed to issue command: BGSCAN-START\n", __func__);
 		}
-		os_strncpy(cmd, "PNOFORCE 1", MAX_DRV_CMD_SIZE);
 		drv->bgscan_enabled = 1;
+		return ret;
 	} else if( os_strcasecmp(cmd, "BGSCAN-STOP") == 0 ) {
-		os_strncpy(cmd, "PNOFORCE 0", MAX_DRV_CMD_SIZE);
 		drv->bgscan_enabled = 0;
+		return 0;
+#endif
 	}
 
 	os_memset(&iwr, 0, sizeof(iwr));
