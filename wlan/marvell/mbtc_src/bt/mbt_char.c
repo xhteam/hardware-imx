@@ -52,9 +52,9 @@ mbtchar_chmod(char *name, mode_t mode)
 	do {
 		os_sched_timeout(30);
 		ret = kern_path(name, LOOKUP_FOLLOW, &path);
-		if (++retrycount >= 10) {
+		if (++retrycount >= 30) {
 			PRINTM(ERROR,
-			       "mbtchar_chmod(): fail to get kern_path\n");
+			       "mbtchar_chmod(): fail to get kern_path of %s\n",name);
 			LEAVE();
 			return -EFAULT;
 		}
@@ -110,7 +110,7 @@ mbtchar_chown(char *name, uid_t user, gid_t group)
 	do {
 		os_sched_timeout(30);
 		ret = kern_path(name, LOOKUP_FOLLOW, &path);
-		if (++retrycount >= 10) {
+		if (++retrycount >= 30) {
 			PRINTM(ERROR,
 			       "mbtchar_chown(): fail to get kern_path of %s\n",name);
 			LEAVE();

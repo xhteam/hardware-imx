@@ -49,6 +49,26 @@ LOCAL_MODULE_PATH := $(TARGET_OUT)/lib/modules
 LOCAL_SRC_FILES := $(wlan_module_file)
 include $(BUILD_PREBUILT)
 
+mbtc_cleanup := $(MRVL_ANDROID_ROOT)/$(MRVL_ANDROID_SRC_MBTC)/mbtcdummy
+
+$(mbtc_cleanup) :
+	$(MAKE) -C $(MRVL_ANDROID_SRC_MBTC) ARCH=arm CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	clean 
+	$(MAKE) -C $(MRVL_ANDROID_SRC_MBTC) ARCH=arm CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	distclean 	
+	mkdir -p $(TARGET_OUT)/lib/modules
+
+mbtc_module_file :=mbtc_src/mbt8xxx.ko
+$(MRVL_ANDROID_SRC_BASE)/$(mbtc_module_file):$(mbtc_cleanup) $(TARGET_PREBUILT_KERNEL) $(ACP)
+	$(MAKE) -C $(MRVL_ANDROID_SRC_MBTC) ARCH=arm SOURCE_DIR=$(MRVL_ANDROID_ROOT)/$(MRVL_ANDROID_SRC_MBTC) CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	default 
+	$(ACP) -fpt $(MRVL_ANDROID_SRC_MBTC)/mbt8xxx.ko $(TARGET_OUT)/lib/modules
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mbt8xxx.ko
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := ETC
+LOCAL_MODULE_PATH := $(TARGET_OUT)/lib/modules
+LOCAL_SRC_FILES := $(mbtc_module_file)
+include $(BUILD_PREBUILT)
+
 
 mbt_cleanup := $(MRVL_ANDROID_ROOT)/$(MRVL_ANDROID_SRC_MBT)/bluetoothdummy
 
@@ -70,25 +90,6 @@ LOCAL_MODULE_PATH := $(TARGET_OUT)/lib/modules
 LOCAL_SRC_FILES := $(mbt_module_file)
 include $(BUILD_PREBUILT)
 
-mbtc_cleanup := $(MRVL_ANDROID_ROOT)/$(MRVL_ANDROID_SRC_MBTC)/mbtcdummy
-
-$(mbtc_cleanup) :
-	$(MAKE) -C $(MRVL_ANDROID_SRC_MBTC) ARCH=arm CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	clean 
-	$(MAKE) -C $(MRVL_ANDROID_SRC_MBTC) ARCH=arm CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	distclean 	
-	mkdir -p $(TARGET_OUT)/lib/modules
-
-mbtc_module_file :=mbtc_src/mbt8xxx.ko
-$(MRVL_ANDROID_SRC_BASE)/$(mbtc_module_file):$(mbtc_cleanup) $(TARGET_PREBUILT_KERNEL) $(ACP)
-	$(MAKE) -C $(MRVL_ANDROID_SRC_MBTC) ARCH=arm SOURCE_DIR=$(MRVL_ANDROID_ROOT)/$(MRVL_ANDROID_SRC_MBTC) CROSS_COMPILE=$(MRVL_CROSS_COMPILE) KERNELDIR=$(MRVL_LINUXPATH) INSTALLDIR=$(TARGET_OUT)/lib/modules/	default 
-	$(ACP) -fpt $(MRVL_ANDROID_SRC_MBTC)/mbt8xxx.ko $(TARGET_OUT)/lib/modules
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := mbt8xxx.ko
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_CLASS := ETC
-LOCAL_MODULE_PATH := $(TARGET_OUT)/lib/modules
-LOCAL_SRC_FILES := $(mbtc_module_file)
-include $(BUILD_PREBUILT)
 
 
 
