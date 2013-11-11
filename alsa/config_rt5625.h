@@ -21,8 +21,12 @@
 #include "audio_hardware.h"
 
 
-
-
+enum audio_aec_mode{
+	AEC_MODE_DISABLED=0,
+	AEC_MODE_PCM_IN_PCM_OUT,
+	AEC_MODE_ANALOG_IN_ANALOG_OUT,
+	AEC_MODE_DAC_IN_DAC_OUT,
+};
 
 /* These are values that never change */
 static struct route_setting defaults_rt5625[] = {
@@ -49,6 +53,10 @@ static struct route_setting bt_output_rt5625[] = {
 
 //default use hp mixer to speaker
 static struct route_setting speaker_output_rt5625[] = {
+    {
+        .ctl_name = "SPKOUT Playback Volume",
+        .intval = 26,
+    },
     {
         .ctl_name = "SPKOUT Playback Switch",
         .intval = 1,
@@ -99,15 +107,9 @@ static struct route_setting earpiece_output_rt5625[] = {
 };
 
 
-//FIXME
-static struct route_setting vx_hs_mic_input_rt5625[] = {
-    {
-        .ctl_name = NULL,
-    },
-};
 
 
-//FIXME
+
 static struct route_setting mm_main_mic_input_rt5625[] = {
     {
         .ctl_name = "Right Rec Mixer Mic1 Capture Switch",
@@ -134,12 +136,189 @@ static struct route_setting mm_main_mic_input_rt5625[] = {
     },
 };
 
-//FIXME
+/*
+ *
+ 
+|-----------|
+|                   |<------------------AuxOut<------------ ---------------|
+|Voice Modem|                                                      -------                            |                            
+|                   |------> MIC1---->ADCR------->|          |				     |
+|-------  ---|-----> PhoneIn------->ADCL-- >|VoDSP |--->DAC---->Mono Mixer                                                     
+                                       |                                    |----- |         
+				           |	----->SPK Mixer->On board speaker 
+					    | ----->HP Mixer-->Headset
+
+Path1(Near end to Far end) : Near end->MICIN -> ADC -> VoDSP -> TXDP( Echo canceling ) ? 
+DAC ->AUXOUT ->Far end 
+Path2(Far end to Near end) : Far end -> Phone IN -> ADC ->RxDP ( For Echo reference ) -> 
+VoDSP ->TxDC ->VoDAC ? Near end 
+ 
+Path in codec : 1.PhoneIN( Differential ) -> ADC record mixer L->ADC L -> RxDP -> VoDSP 
+                        2.MIC1IN( Differential ) -> ADC record mixer R-> ADC R->PDM -> VoDSP 
+                        3.TxDP -> DAC(16k sample rate) -> mono mixer -> AUXOUT( Differential ) 
+                4.TxDC -> VoDAC(16k sample rate) -> SPKmixer -> SPKOUT 					    
+*/
 static struct route_setting vx_main_mic_input_rt5625[] = {
+	{
+		.ctl_name = "AEC Mode",
+		.intval = AEC_MODE_ANALOG_IN_ANALOG_OUT,
+	},	
+    {
+        .ctl_name = "Left Rec Mixer Phone Capture Switch",
+		.intval = 1,
+    },
+    {
+        .ctl_name = "Right Rec Mixer Mic1 Capture Switch",
+		.intval = 1,
+    },
+	{
+		.ctl_name = "Left Rec Mixer Mic1 Capture Switch",
+		.intval = 0,
+	},    
+	{
+		.ctl_name = "SPK Mixer Phone Playback Switch",
+		.intval = 1,
+	},	
+	{
+		.ctl_name = "PCM Capture Volume",
+		.intval = 23,
+	},    
+	{
+		.ctl_name = "Mic1 Amp Boost Type",
+		.intval = 0,
+	},
+	{
+		.ctl_name = "Mic1 Playback Volume",
+		.intval = 25,
+	},	
+	{
+		.ctl_name = "MoNo Mixer Voice DAC Playback Switch",
+		.intval = 1,
+	},	
+	{
+		.ctl_name = "AUXOUT Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "AUXOUT Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "AUXOUT Mux",
+		.intval = 3,//mux source fron nonomixer
+	},
+	{
+		.ctl_name = "Phone Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "Voice DAC Enable",
+		.intval = 1,
+	},	
     {
         .ctl_name = NULL,
     },
 };
+
+static struct route_setting vx_hp_mic_input_rt5625[] = {
+	{
+		.ctl_name = "AEC Mode",
+		.intval = AEC_MODE_DISABLED,
+	},	
+    {
+        .ctl_name = "Right HP Mixer Phone Playback Switch",
+		.intval = 1,
+    },
+	{
+        .ctl_name = "Left HP Mixer Phone Playback Switch",
+		.intval = 1,
+    },
+	{
+		.ctl_name = "MoNo Mixer Mic1 Playback Switch",
+		.intval = 1,
+	},    
+	{
+		.ctl_name = "Mic1 Amp Boost Type",
+		.intval = 0,
+	},
+	{
+		.ctl_name = "Mic1 Playback Volume",
+		.intval = 23,
+	},	
+	{
+		.ctl_name = "AUXOUT Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "AUXOUT Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "AUXOUT Mux",
+		.intval = 3,//mux source fron nonomixer
+	},
+	{
+		.ctl_name = "Phone Playback Volume",
+		.intval = 15,
+	},
+    {
+        .ctl_name = NULL,
+    },
+};
+
+/*
+ * For headset phone we don't enable AEC mode??
+
+
+ 
+|-----------|
+|                   |<------------------AuxOut<---------|
+|Voice Modem|                                                      ---- |                            
+|                   |------> MIC1---->Mono Mixer------->|          
+|-------  ---|-----> PhoneIn-------HP Mixer-->Headset  
+*/
+static struct route_setting vx_hs_mic_input_rt5625[] = {
+    {
+        .ctl_name = "Right HP Mixer Phone Playback Switch",
+		.intval = 1,
+    },
+	{
+        .ctl_name = "Left HP Mixer Phone Playback Switch",
+		.intval = 1,
+    },
+	{
+		.ctl_name = "Mic2 Amp Boost Type",
+		.intval = 0,
+	},
+	{
+		.ctl_name = "Mic2 Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "MoNo Mixer Mic2 Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "AUXOUT Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "AUXOUT Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "AUXOUT Mux",
+		.intval = 3,//mux source fron nonomixer
+	},
+	{
+        .ctl_name = "Phone Playback Volume",
+		.intval = 15,
+    },
+	{
+        .ctl_name = NULL,
+    },
+};
+
 
 static struct route_setting mm_hs_mic_input_rt5625[] = {
     {
@@ -207,6 +386,7 @@ static struct audio_card  rt5625_card = {
     .vx_hs_mic_input     = vx_hs_mic_input_rt5625,
     .mm_main_mic_input   = mm_main_mic_input_rt5625,
     .vx_main_mic_input   = vx_main_mic_input_rt5625,
+    .vx_hp_mic_input	 = vx_hp_mic_input_rt5625,
     .mm_hs_mic_input     = mm_hs_mic_input_rt5625,
     .vx_bt_mic_input     = vx_bt_mic_input_rt5625,
     .mm_bt_mic_input     = mm_bt_mic_input_rt5625,

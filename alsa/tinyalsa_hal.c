@@ -397,7 +397,7 @@ static void select_output_device(struct imx_audio_device *adev)
         }
     }
     /*if mode = AUDIO_MODE_IN_CALL*/
-    ALOGD("headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
+    ALOGD("select_output_device headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
     /* select output stage */
     for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, bt_on);
@@ -438,17 +438,41 @@ static void select_output_device(struct imx_audio_device *adev)
                     break;
             }
 
-            if (headset_on)
+			ALOGD("select mic for incall state headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
+
+            if (headset_on){
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hp_mic_input, 0);
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
                 for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
                     set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hs_mic_input, 1);
-            else if (headphone_on || earpiece_on || speaker_on)
+        	}
+			else if(headphone_on)
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hp_mic_input, 1);
+            else if (earpiece_on || speaker_on){
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hs_mic_input, 0);				
+                for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+                    set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hp_mic_input, 0);
                 for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
                     set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 1);
+        	}
             else
                 for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
                     set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
         }
-    }
+    }else {
+    	
+		ALOGD("disable all mic for vx\n");
+		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+			set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hs_mic_input, 0);
+		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+			set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
+		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+			set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hp_mic_input, 0);		
+	}
 }
 
 static void select_input_device(struct imx_audio_device *adev)
@@ -471,7 +495,7 @@ static void select_input_device(struct imx_audio_device *adev)
         main_mic_on = adev->in_device & AUDIO_DEVICE_IN_BUILTIN_MIC;
     }
 
-   ALOGD("bt_on %d,headset %d ,main_mic_on %d, sub_mic_on %d, \n",bt_on , headset_on, main_mic_on, sub_mic_on);
+   ALOGD("select_input_device bt_on %d,headset %d ,main_mic_on %d, sub_mic_on %d, \n",bt_on , headset_on, main_mic_on, sub_mic_on);
 
    /* TODO: check how capture is possible during voice calls or if
     * both use cases are mutually exclusive.
