@@ -39,11 +39,11 @@ Change log:
 #include "mlan_sdio.h"
 
 /********************************************************
-        Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-        Local Functions
+			Local Functions
 ********************************************************/
 
 /**
@@ -62,11 +62,11 @@ wlan_add_bsspriotbl(pmlan_private priv)
 
 	ENTER();
 
-	if ((status =
-	     pmadapter->callbacks.moal_malloc(pmadapter->pmoal_handle,
-					      sizeof(mlan_bssprio_node),
-					      MLAN_MEM_DEF,
-					      (t_u8 **) & pbssprio))) {
+	status = pmadapter->callbacks.moal_malloc(pmadapter->pmoal_handle,
+						  sizeof(mlan_bssprio_node),
+						  MLAN_MEM_DEF,
+						  (t_u8 **) & pbssprio);
+	if (status) {
 		PRINTM(MERROR, "Failed to allocate bsspriotbl\n");
 		LEAVE();
 		return status;
@@ -157,7 +157,7 @@ wlan_delete_bsspriotbl(pmlan_private priv)
 }
 
 /********************************************************
-        Global Functions
+			Global Functions
 ********************************************************/
 
 /**
@@ -960,7 +960,8 @@ wlan_init_fw(IN pmlan_adapter pmadapter)
 			priv = pmadapter->priv[i];
 
 			/* Initialize private structure */
-			if ((ret = wlan_init_priv(priv))) {
+			ret = wlan_init_priv(priv);
+			if (ret) {
 				ret = MLAN_STATUS_FAILURE;
 				goto done;
 			}

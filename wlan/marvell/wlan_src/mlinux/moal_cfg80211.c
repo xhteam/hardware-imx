@@ -1804,7 +1804,9 @@ woal_cfg80211_mgmt_tx(struct wiphy *wiphy,
 			woal_cancel_timer(&priv->phandle->go_timer);
 			priv->phandle->is_go_timer_set = MFALSE;
 		}
-#define MGMT_TX_DEFAULT_WAIT_TIME	   500
+		/* With sd8777 We have difficulty to receive response packet in
+		   500ms */
+#define MGMT_TX_DEFAULT_WAIT_TIME	   1500
 		/** cancel previous remain on channel */
 		if (priv->phandle->remain_on_channel) {
 			remain_priv =
@@ -1817,14 +1819,21 @@ woal_cfg80211_mgmt_tx(struct wiphy *wiphy,
 				ret = -EFAULT;
 				goto done;
 			}
-			if (woal_cfg80211_remain_on_channel_cfg
-			    (remain_priv, MOAL_IOCTL_WAIT, MTRUE,
-			     &channel_status, NULL, 0, 0)) {
-				PRINTM(MERROR,
-				       "mgmt_tx:Fail to cancel remain on channel\n");
-				ret = -EFAULT;
-				goto done;
+			if ((priv->phandle->chan.center_freq !=
+			     chan->center_freq)
+			    || (priv->phandle->card_type == CARD_TYPE_SD8787)
+				) {
+				if (woal_cfg80211_remain_on_channel_cfg
+				    (remain_priv, MOAL_IOCTL_WAIT, MTRUE,
+				     &channel_status, NULL, 0, 0)) {
+					PRINTM(MERROR,
+					       "mgmt_tx:Fail to cancel remain on channel\n");
+					ret = -EFAULT;
+					goto done;
+				}
+
 			}
+
 			if (priv->phandle->cookie) {
 				cfg80211_remain_on_channel_expired(
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
@@ -1854,9 +1863,11 @@ woal_cfg80211_mgmt_tx(struct wiphy *wiphy,
 		/** cancel pending scan */
 		woal_cancel_scan(priv, MOAL_IOCTL_WAIT);
 #endif
-		duration = wait;
-		if (!wait)
-			duration = MGMT_TX_DEFAULT_WAIT_TIME;
+
+		duration =
+			(wait >
+			 MGMT_TX_DEFAULT_WAIT_TIME) ? wait :
+			MGMT_TX_DEFAULT_WAIT_TIME;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 		if (channel_type_valid)
 			ret = woal_cfg80211_remain_on_channel_cfg(priv,
@@ -1875,20 +1886,45 @@ woal_cfg80211_mgmt_tx(struct wiphy *wiphy,
 								  chan, 0,
 								  duration);
 		if (ret) {
-			PRINTM(MERROR, "Fail to configure remain on channel\n");
-			ret = -EFAULT;
-			goto done;
-		}
-		priv->phandle->remain_on_channel = MTRUE;
-		priv->phandle->remain_bss_index = priv->bss_index;
+			/* Return fail will cause p2p connnection fail */
+			woal_sched_timeout(2);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-		priv->phandle->channel_type = channel_type;
+			if (channel_type_valid)
+				ret = woal_cfg80211_remain_on_channel_cfg(priv,
+									  MOAL_IOCTL_WAIT,
+									  MFALSE,
+									  &channel_status,
+									  chan,
+									  channel_type,
+									  duration);
+			else
 #endif
-		memcpy(&priv->phandle->chan, chan,
-		       sizeof(struct ieee80211_channel));
-		PRINTM(MIOCTL, "%s: Mgmt Tx: Set remain channel=%d\n",
-		       dev->name,
-		       ieee80211_frequency_to_channel(chan->center_freq));
+				ret = woal_cfg80211_remain_on_channel_cfg(priv,
+									  MOAL_IOCTL_WAIT,
+									  MFALSE,
+									  &channel_status,
+									  chan,
+									  0,
+									  duration);
+			PRINTM(MERROR,
+			       "Try configure remain on channel again, ret=%d\n",
+			       ret);
+			ret = 0;
+		} else {
+			priv->phandle->remain_on_channel = MTRUE;
+			priv->phandle->remain_bss_index = priv->bss_index;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
+			priv->phandle->channel_type = channel_type;
+#endif
+			memcpy(&priv->phandle->chan, chan,
+			       sizeof(struct ieee80211_channel));
+			PRINTM(MIOCTL,
+			       "%s: Mgmt Tx: Set remain channel=%d duration=%d\n",
+			       dev->name,
+			       ieee80211_frequency_to_channel(chan->
+							      center_freq),
+			       duration);
+		}
 	}
 #endif
 #endif

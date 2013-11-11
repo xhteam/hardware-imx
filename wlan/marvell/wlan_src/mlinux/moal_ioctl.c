@@ -131,7 +131,7 @@ region_string_2_region_code(char *region_string)
 			    region_code_mapping[i].region,
 			    strlen(region_string))) {
 			LEAVE();
-			return (region_code_mapping[i].code);
+			return region_code_mapping[i].code;
 		}
 	}
 	/* Default is US */
@@ -3977,8 +3977,9 @@ woal_cancel_scan(moal_private * priv, t_u8 wait_option)
 	for (i = 0; i < handle->priv_num; i++) {
 		if (IS_STA_CFG80211(cfg80211_wext) &&
 		    handle->priv[i]->scan_request) {
+	    /** some supplicant can not handle SCAN abort event */
 			cfg80211_scan_done(handle->priv[i]->scan_request,
-					   MTRUE);
+					   MFALSE);
 			handle->priv[i]->scan_request = NULL;
 		}
 	}

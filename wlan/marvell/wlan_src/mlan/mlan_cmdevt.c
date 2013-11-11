@@ -35,15 +35,15 @@ Change Log:
 #include "mlan_11h.h"
 #include "mlan_sdio.h"
 /********************************************************
-                Local Variables
+			Local Variables
 ********************************************************/
 
 /*******************************************************
-                Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 #ifdef STA_SUPPORT
 /**
@@ -59,14 +59,14 @@ wlan_check_scan_queue(IN pmlan_adapter pmadapter)
 	cmd_ctrl_node *pcmd_node = MNULL;
 	t_u16 num = 0;
 
-	if (!
-	    (pcmd_node =
-	     (cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
-					      &pmadapter->scan_pending_q,
-					      pmadapter->callbacks.
-					      moal_spin_lock,
-					      pmadapter->callbacks.
-					      moal_spin_unlock))) {
+	pcmd_node =
+		(cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
+						 &pmadapter->scan_pending_q,
+						 pmadapter->callbacks.
+						 moal_spin_lock,
+						 pmadapter->callbacks.
+						 moal_spin_unlock);
+	if (!pcmd_node) {
 		PRINTM(MERROR, "No pending scan command\n");
 		return;
 	}
@@ -93,14 +93,14 @@ wlan_dump_pending_commands(pmlan_adapter pmadapter)
 
 	ENTER();
 
-	if (!
-	    (pcmd_node =
-	     (cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
-					      &pmadapter->cmd_pending_q,
-					      pmadapter->callbacks.
-					      moal_spin_lock,
-					      pmadapter->callbacks.
-					      moal_spin_unlock))) {
+	pcmd_node =
+		(cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
+						 &pmadapter->cmd_pending_q,
+						 pmadapter->callbacks.
+						 moal_spin_lock,
+						 pmadapter->callbacks.
+						 moal_spin_unlock);
+	if (!pcmd_node) {
 		LEAVE();
 		return;
 	}
@@ -360,7 +360,7 @@ wlan_parse_cal_cfg(t_u8 * src, t_size len, t_u8 * dst)
 		}
 	}
 	LEAVE();
-	return (dptr - dst);
+	return dptr - dst;
 }
 
 /**
@@ -500,14 +500,14 @@ wlan_get_pending_ioctl_by_id(pmlan_adapter pmadapter, t_u32 req_id)
 
 	ENTER();
 
-	if (!
-	    (pcmd_node =
-	     (cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
-					      &pmadapter->cmd_pending_q,
-					      pmadapter->callbacks.
-					      moal_spin_lock,
-					      pmadapter->callbacks.
-					      moal_spin_unlock))) {
+	pcmd_node =
+		(cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
+						 &pmadapter->cmd_pending_q,
+						 pmadapter->callbacks.
+						 moal_spin_lock,
+						 pmadapter->callbacks.
+						 moal_spin_unlock);
+	if (!pcmd_node) {
 		LEAVE();
 		return MNULL;
 	}
@@ -542,14 +542,14 @@ wlan_get_pending_ioctl_cmd(pmlan_adapter pmadapter, pmlan_ioctl_req pioctl_req)
 
 	ENTER();
 
-	if (!
-	    (pcmd_node =
-	     (cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
-					      &pmadapter->cmd_pending_q,
-					      pmadapter->callbacks.
-					      moal_spin_lock,
-					      pmadapter->callbacks.
-					      moal_spin_unlock))) {
+	pcmd_node =
+		(cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
+						 &pmadapter->cmd_pending_q,
+						 pmadapter->callbacks.
+						 moal_spin_lock,
+						 pmadapter->callbacks.
+						 moal_spin_unlock);
+	if (!pcmd_node) {
 		LEAVE();
 		return MNULL;
 	}
@@ -581,14 +581,14 @@ wlan_get_bss_pending_ioctl_cmd(pmlan_adapter pmadapter, t_u32 bss_index)
 	mlan_ioctl_req *pioctl_buf = MNULL;
 	ENTER();
 
-	if (!
-	    (pcmd_node =
-	     (cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
-					      &pmadapter->cmd_pending_q,
-					      pmadapter->callbacks.
-					      moal_spin_lock,
-					      pmadapter->callbacks.
-					      moal_spin_unlock))) {
+	pcmd_node =
+		(cmd_ctrl_node *) util_peek_list(pmadapter->pmoal_handle,
+						 &pmadapter->cmd_pending_q,
+						 pmadapter->callbacks.
+						 moal_spin_lock,
+						 pmadapter->callbacks.
+						 moal_spin_unlock);
+	if (!pcmd_node) {
 		LEAVE();
 		return MNULL;
 	}
@@ -881,7 +881,7 @@ done:
 }
 
 /********************************************************
-                Global Functions
+			Global Functions
 ********************************************************/
 
 /**
@@ -955,11 +955,11 @@ wlan_alloc_cmd_buffer(IN mlan_adapter * pmadapter)
 
 	/* Allocate and initialize command buffers */
 	for (i = 0; i < MRVDRV_NUM_OF_CMD_BUFFER; i++) {
-		if (!(pcmd_array[i].pmbuf = wlan_alloc_mlan_buffer(pmadapter,
-								   MRVDRV_SIZE_OF_CMD_BUFFER,
-								   0,
-								   MOAL_MALLOC_BUFFER)))
-		{
+		pcmd_array[i].pmbuf = wlan_alloc_mlan_buffer(pmadapter,
+							     MRVDRV_SIZE_OF_CMD_BUFFER,
+							     0,
+							     MOAL_MALLOC_BUFFER);
+		if (!pcmd_array[i].pmbuf) {
 			PRINTM(MERROR,
 			       "ALLOC_CMD_BUF: Failed to allocate command buffer\n");
 			ret = MLAN_STATUS_FAILURE;

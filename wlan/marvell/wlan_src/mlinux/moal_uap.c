@@ -2227,14 +2227,15 @@ woal_uap_set_ap_cfg(moal_private * priv, t_u8 * data, int len)
 	sys_config.channel = 6;
 	sys_config.preamble_type = 0;
 
-	if ((ret = woal_uap_ap_cfg_parse_data(&sys_config, buf)))
+	ret = woal_uap_ap_cfg_parse_data(&sys_config, buf);
+	if (ret)
 		goto done;
 
 	/* If BSS already started stop it first and restart after changing the
 	   setting */
 	if (priv->bss_started == MTRUE) {
-		if ((ret =
-		     woal_uap_bss_ctrl(priv, MOAL_IOCTL_WAIT, UAP_BSS_STOP)))
+		ret = woal_uap_bss_ctrl(priv, MOAL_IOCTL_WAIT, UAP_BSS_STOP);
+		if (ret)
 			goto done;
 		restart = 1;
 	}
@@ -2308,7 +2309,7 @@ woal_uap_bss_ctrl(moal_private * priv, t_u8 wait_option, int data)
 	case UAP_BSS_START:
 		if (priv->bss_started == MTRUE) {
 			PRINTM(MWARN, "Warning: BSS already started!\n");
-			// goto done;
+			/* goto done; */
 		} else {
 			/* about to start bss: issue channel check */
 			woal_11h_channel_check_ioctl(priv);
@@ -2318,7 +2319,7 @@ woal_uap_bss_ctrl(moal_private * priv, t_u8 wait_option, int data)
 	case UAP_BSS_STOP:
 		if (priv->bss_started == MFALSE) {
 			PRINTM(MWARN, "Warning: BSS already stopped!\n");
-			// goto done;
+			/* goto done; */
 		}
 		bss->sub_command = MLAN_OID_BSS_STOP;
 		break;

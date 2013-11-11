@@ -41,22 +41,22 @@ extern t_u32 mlan_drvdbg;
 
 #ifdef	DEBUG_LEVEL2
 #define	PRINTM_MINFO(msg...)  do {if ((mlan_drvdbg & MINFO) && (print_callback)) \
-                                    print_callback(MNULL, MINFO, msg);} while(0)
+				  print_callback(MNULL, MINFO, msg); } while(0)
 #define	PRINTM_MWARN(msg...)  do {if ((mlan_drvdbg & MWARN) && (print_callback)) \
-                                    print_callback(MNULL, MWARN, msg);} while(0)
+				  print_callback(MNULL, MWARN, msg); } while(0)
 #define	PRINTM_MENTRY(msg...) do {if ((mlan_drvdbg & MENTRY) && (print_callback)) \
-                                    print_callback(MNULL, MENTRY, msg);} while(0)
-#define PRINTM_GET_SYS_TIME(level, psec, pusec)             \
-do {                                                        \
-    if ((level & mlan_drvdbg) && (get_sys_time_callback))        \
-        get_sys_time_callback(MNULL, psec, pusec);          \
+				  print_callback(MNULL, MENTRY, msg); } while(0)
+#define PRINTM_GET_SYS_TIME(level, psec, pusec)              \
+do {                                                         \
+	if ((level & mlan_drvdbg) && (get_sys_time_callback))\
+	    get_sys_time_callback(MNULL, psec, pusec);       \
 } while (0)
 
 /** Hexdump for level-2 debugging */
-#define HEXDUMP(x,y,z)   \
+#define HEXDUMP(x, y, z)   \
 do {                \
-    if ((mlan_drvdbg & (MHEX_DUMP | MINFO)) && (print_callback))  \
-        print_callback(MNULL, MHEX_DUMP | MINFO, x, y, z); \
+	if ((mlan_drvdbg & (MHEX_DUMP | MINFO)) && (print_callback))  \
+	    print_callback(MNULL, MHEX_DUMP | MINFO, x, y, z); \
 } while (0)
 
 #else
@@ -67,53 +67,53 @@ do {                \
 
 #define PRINTM_GET_SYS_TIME(level, psec, pusec)         \
 do {                                                    \
-    if ((level & mlan_drvdbg) && (get_sys_time_callback)     \
-            && (level != MINFO) && (level != MWARN))    \
-        get_sys_time_callback(MNULL, psec, pusec);      \
+	if ((level & mlan_drvdbg) && (get_sys_time_callback)     \
+	        && (level != MINFO) && (level != MWARN))    \
+	    get_sys_time_callback(MNULL, psec, pusec);      \
 } while (0)
 
 /** Hexdump for debugging */
-#define HEXDUMP(x,y,z) do {} while (0)
+#define HEXDUMP(x, y, z) do {} while (0)
 
 #endif /* DEBUG_LEVEL2 */
 
 #define	PRINTM_MFW_D(msg...)  do {if ((mlan_drvdbg & MFW_D) && (print_callback)) \
-                                    print_callback(MNULL, MFW_D, msg);} while(0)
+				  print_callback(MNULL, MFW_D, msg); } while(0)
 #define	PRINTM_MCMD_D(msg...) do {if ((mlan_drvdbg & MCMD_D) && (print_callback)) \
-                                    print_callback(MNULL, MCMD_D, msg);} while(0)
+				  print_callback(MNULL, MCMD_D, msg); } while(0)
 #define	PRINTM_MDAT_D(msg...) do {if ((mlan_drvdbg & MDAT_D) && (print_callback)) \
-                                    print_callback(MNULL, MDAT_D, msg);} while(0)
+				  print_callback(MNULL, MDAT_D, msg); } while(0)
 #define	PRINTM_MIF_D(msg...) do {if ((mlan_drvdbg & MIF_D) && (print_callback)) \
-                                    print_callback(MNULL, MIF_D, msg);} while(0)
+				  print_callback(MNULL, MIF_D, msg); } while(0)
 
 #define	PRINTM_MIOCTL(msg...) do {if ((mlan_drvdbg & MIOCTL) && (print_callback)) \
-                                    print_callback(MNULL, MIOCTL, msg);} while(0)
+				  print_callback(MNULL, MIOCTL, msg); } while(0)
 #define	PRINTM_MINTR(msg...)  do {if ((mlan_drvdbg & MINTR) && (print_callback)) \
-                                    print_callback(MNULL, MINTR, msg);} while(0)
+				  print_callback(MNULL, MINTR, msg); } while(0)
 #define	PRINTM_MEVENT(msg...) do {if ((mlan_drvdbg & MEVENT) && (print_callback)) \
-                                    print_callback(MNULL, MEVENT, msg);} while(0)
+				  print_callback(MNULL, MEVENT, msg); } while(0)
 #define	PRINTM_MCMND(msg...)  do {if ((mlan_drvdbg & MCMND) && (print_callback)) \
-                                    print_callback(MNULL, MCMND, msg);} while(0)
+				  print_callback(MNULL, MCMND, msg); } while(0)
 #define	PRINTM_MDATA(msg...)  do {if ((mlan_drvdbg & MDATA) && (print_callback)) \
-                                    print_callback(MNULL, MDATA, msg);} while(0)
+				  print_callback(MNULL, MDATA, msg); } while(0)
 #define	PRINTM_MERROR(msg...) do {if ((mlan_drvdbg & MERROR) && (print_callback)) \
-                                    print_callback(MNULL, MERROR, msg);} while(0)
+				  print_callback(MNULL, MERROR, msg); } while(0)
 #define	PRINTM_MFATAL(msg...) do {if ((mlan_drvdbg & MFATAL) && (print_callback)) \
-                                    print_callback(MNULL, MFATAL, msg);} while(0)
+				  print_callback(MNULL, MFATAL, msg); } while(0)
 #define	PRINTM_MMSG(msg...)   do {if ((mlan_drvdbg & MMSG) && (print_callback)) \
-                                    print_callback(MNULL, MMSG, msg);} while(0)
+				  print_callback(MNULL, MMSG, msg); } while(0)
 
-#define	PRINTM(level,msg...) PRINTM_##level((char*)msg)
+#define	PRINTM(level, msg...) PRINTM_##level((char *)msg)
 
 /** Log debug message */
 #ifdef __GNUC__
 #define PRINTM_NETINTF(level, pmpriv)   \
 do {                                    \
-    if ((mlan_drvdbg & level) && pmpriv      \
-            && pmpriv->adapter->callbacks.moal_print_netintf) \
-        pmpriv->adapter->callbacks.moal_print_netintf( \
-            pmpriv->adapter->pmoal_handle, \
-            pmpriv->bss_index, level); \
+	if ((mlan_drvdbg & level) && pmpriv      \
+	        && pmpriv->adapter->callbacks.moal_print_netintf) \
+	    pmpriv->adapter->callbacks.moal_print_netintf( \
+		    pmpriv->adapter->pmoal_handle, \
+		    pmpriv->bss_index, level); \
 } while (0)
 #endif /* __GNUC__ */
 
@@ -121,23 +121,23 @@ do {                                    \
 #define MAX_DATA_DUMP_LEN	64
 
 /** Debug hexdump for level-1 debugging */
-#define DBG_HEXDUMP(level,x,y,z)   \
+#define DBG_HEXDUMP(level, x, y, z)   \
 do {                \
-    if ((mlan_drvdbg & level) && print_callback)  \
-        print_callback(MNULL, MHEX_DUMP | level, x, y, z); \
+	if ((mlan_drvdbg & level) && print_callback)  \
+		print_callback(MNULL, MHEX_DUMP | level, x, y, z); \
 } while (0)
 
 #else /* DEBUG_LEVEL1 */
 
-#define	PRINTM(level,msg...) do {} while (0)
+#define	PRINTM(level, msg...) do {} while (0)
 
 #define PRINTM_NETINTF(level, pmpriv) do {} while (0)
 
 /** Debug hexdump for level-1 debugging */
-#define DBG_HEXDUMP(level,x,y,z) do {} while (0)
+#define DBG_HEXDUMP(level, x, y, z) do {} while (0)
 
 /** Hexdump for debugging */
-#define HEXDUMP(x,y,z) do {} while (0)
+#define HEXDUMP(x, y, z) do {} while (0)
 
 #define PRINTM_GET_SYS_TIME(level, psec, pusec) do { } while(0)
 
@@ -146,23 +146,23 @@ do {                \
 /** Log entry point for debugging */
 #define ENTER()     \
 do {                \
-        PRINTM(MENTRY, "Enter: %s\n", __FUNCTION__);   \
+	PRINTM(MENTRY, "Enter: %s\n", __FUNCTION__);   \
 } while (0)
 
 /** Log exit point for debugging */
 #define LEAVE()     \
 do {                \
-        PRINTM(MENTRY, "Leave: %s\n", __FUNCTION__);   \
+	PRINTM(MENTRY, "Leave: %s\n", __FUNCTION__);   \
 } while (0)
 
 /** Find minimum */
 #ifndef MIN
-#define MIN(a,b)		((a) < (b) ? (a) : (b))
+#define MIN(a, b)		((a) < (b) ? (a) : (b))
 #endif
 
 /** Find maximum */
 #ifndef MAX
-#define MAX(a,b)		((a) > (b) ? (a) : (b))
+#define MAX(a, b)		((a) > (b) ? (a) : (b))
 #endif
 
 #ifdef memset
@@ -170,28 +170,28 @@ do {                \
 #endif
 /** Memset routine */
 #define memset(adapter, s, c, len) \
-  adapter->callbacks.moal_memset(adapter->pmoal_handle, s, c, len)
+	(adapter->callbacks.moal_memset(adapter->pmoal_handle, s, c, len))
 
 #ifdef memmove
 #undef memmove
 #endif
 /** Memmove routine */
 #define memmove(adapter, dest, src, len) \
-  adapter->callbacks.moal_memmove(adapter->pmoal_handle, dest, src, len)
+	(adapter->callbacks.moal_memmove(adapter->pmoal_handle, dest, src, len))
 
 #ifdef memcpy
 #undef memcpy
 #endif
 /** Memcpy routine */
 #define memcpy(adapter, to, from, len) \
-  adapter->callbacks.moal_memcpy(adapter->pmoal_handle, to, from, len)
+	(adapter->callbacks.moal_memcpy(adapter->pmoal_handle, to, from, len))
 
 #ifdef memcmp
 #undef memcmp
 #endif
 /** Memcmp routine */
 #define memcmp(adapter, s1, s2, len) \
-  adapter->callbacks.moal_memcmp(adapter->pmoal_handle, s1, s2, len)
+	(adapter->callbacks.moal_memcmp(adapter->pmoal_handle, s1, s2, len))
 
 /** Find number of elements */
 #ifndef NELEMENTS
@@ -199,10 +199,10 @@ do {                \
 #endif
 
 /** SWAP: swap t_u8 */
-#define SWAP_U8(a,b)	{t_u8 t; t=a; a=b; b=t;}
+#define SWAP_U8(a, b)	{t_u8 t; t = a; a = b; b = t; }
 
 /** SWAP: swap t_u8 */
-#define SWAP_U16(a,b)	{t_u16 t; t=a; a=b; b=t;}
+#define SWAP_U16(a, b)	{t_u16 t; t = a; a = b; b = t; }
 
 /** MLAN MNULL pointer */
 #define MNULL                           (0)
@@ -210,25 +210,25 @@ do {                \
 /** 16 bits byte swap */
 #define swap_byte_16(x) \
 ((t_u16)((((t_u16)(x) & 0x00ffU) << 8) | \
-         (((t_u16)(x) & 0xff00U) >> 8)))
+		 (((t_u16)(x) & 0xff00U) >> 8)))
 
 /** 32 bits byte swap */
 #define swap_byte_32(x) \
 ((t_u32)((((t_u32)(x) & 0x000000ffUL) << 24) | \
-         (((t_u32)(x) & 0x0000ff00UL) <<  8) | \
-         (((t_u32)(x) & 0x00ff0000UL) >>  8) | \
-         (((t_u32)(x) & 0xff000000UL) >> 24)))
+	 (((t_u32)(x) & 0x0000ff00UL) <<  8) | \
+	 (((t_u32)(x) & 0x00ff0000UL) >>  8) | \
+	 (((t_u32)(x) & 0xff000000UL) >> 24)))
 
 /** 64 bits byte swap */
 #define swap_byte_64(x) \
 ((t_u64)((t_u64)(((t_u64)(x) & 0x00000000000000ffULL) << 56) | \
-         (t_u64)(((t_u64)(x) & 0x000000000000ff00ULL) << 40) | \
-         (t_u64)(((t_u64)(x) & 0x0000000000ff0000ULL) << 24) | \
-         (t_u64)(((t_u64)(x) & 0x00000000ff000000ULL) <<  8) | \
-         (t_u64)(((t_u64)(x) & 0x000000ff00000000ULL) >>  8) | \
-         (t_u64)(((t_u64)(x) & 0x0000ff0000000000ULL) >> 24) | \
-         (t_u64)(((t_u64)(x) & 0x00ff000000000000ULL) >> 40) | \
-         (t_u64)(((t_u64)(x) & 0xff00000000000000ULL) >> 56) ))
+	     (t_u64)(((t_u64)(x) & 0x000000000000ff00ULL) << 40) | \
+	     (t_u64)(((t_u64)(x) & 0x0000000000ff0000ULL) << 24) | \
+	     (t_u64)(((t_u64)(x) & 0x00000000ff000000ULL) <<  8) | \
+	     (t_u64)(((t_u64)(x) & 0x000000ff00000000ULL) >>  8) | \
+	     (t_u64)(((t_u64)(x) & 0x0000ff0000000000ULL) >> 24) | \
+	     (t_u64)(((t_u64)(x) & 0x00ff000000000000ULL) >> 40) | \
+	     (t_u64)(((t_u64)(x) & 0xff00000000000000ULL) >> 56) ))
 
 #ifdef BIG_ENDIAN_SUPPORT
 /** Convert ulong n/w to host */
@@ -254,21 +254,21 @@ do {                \
 
 /** Convert TxPD to little endian format from CPU format */
 #define endian_convert_TxPD(x)                                          \
-    {                                                                   \
-        (x)->tx_pkt_length = wlan_cpu_to_le16((x)->tx_pkt_length);      \
-        (x)->tx_pkt_offset = wlan_cpu_to_le16((x)->tx_pkt_offset);      \
-        (x)->tx_pkt_type   = wlan_cpu_to_le16((x)->tx_pkt_type);        \
-        (x)->tx_control    = wlan_cpu_to_le32((x)->tx_control);         \
-    }
+	{                                                                   \
+	    (x)->tx_pkt_length = wlan_cpu_to_le16((x)->tx_pkt_length);      \
+	    (x)->tx_pkt_offset = wlan_cpu_to_le16((x)->tx_pkt_offset);      \
+	    (x)->tx_pkt_type   = wlan_cpu_to_le16((x)->tx_pkt_type);        \
+	    (x)->tx_control    = wlan_cpu_to_le32((x)->tx_control);         \
+	}
 
 /** Convert RxPD from little endian format to CPU format */
 #define endian_convert_RxPD(x)                                          \
-    {                                                                   \
-        (x)->rx_pkt_length = wlan_le16_to_cpu((x)->rx_pkt_length);      \
-        (x)->rx_pkt_offset = wlan_le16_to_cpu((x)->rx_pkt_offset);      \
-        (x)->rx_pkt_type   = wlan_le16_to_cpu((x)->rx_pkt_type);        \
-        (x)->seq_num       = wlan_le16_to_cpu((x)->seq_num);            \
-    }
+	{                                                                   \
+	    (x)->rx_pkt_length = wlan_le16_to_cpu((x)->rx_pkt_length);      \
+	    (x)->rx_pkt_offset = wlan_le16_to_cpu((x)->rx_pkt_offset);      \
+	    (x)->rx_pkt_type   = wlan_le16_to_cpu((x)->rx_pkt_type);        \
+	    (x)->seq_num       = wlan_le16_to_cpu((x)->seq_num);            \
+	}
 #else
 /** Convert ulong n/w to host */
 #define mlan_ntohl(x) swap_byte_32(x)
@@ -303,14 +303,14 @@ extern t_void(*assert_callback) (IN t_void * pmoal_handle, IN t_u32 cond);
 /** Assertion */
 #define MASSERT(cond)                   \
 do {                                    \
-    if (!(cond)) {                      \
-        PRINTM(MFATAL, "ASSERT: %s: %i\n", __FUNCTION__, __LINE__); \
-        if (assert_callback) {          \
-            assert_callback(MNULL, (t_ptr)(cond)); \
-        } else {                        \
-            do {} while(1);             \
-        }                               \
-    }                                   \
+	if (!(cond)) {                      \
+	    PRINTM(MFATAL, "ASSERT: %s: %i\n", __FUNCTION__, __LINE__); \
+	    if (assert_callback) {          \
+	        assert_callback(MNULL, (t_ptr)(cond)); \
+	    } else {                        \
+	        do {} while(1);             \
+	    }                               \
+	}                                   \
 } while(0)
 
 /** Upload size */
@@ -433,8 +433,8 @@ do {                                    \
 
 /** Is cmd_resp, event or data packet received? */
 #define IS_CARD_RX_RCVD(adapter) (adapter->cmd_resp_received || \
-                                  adapter->event_received || \
-                                  adapter->data_received)
+	                          adapter->event_received || \
+	                          adapter->data_received)
 /** Type command */
 #define MLAN_TYPE_CMD			1
 /** Type data */
@@ -2408,9 +2408,9 @@ static int INLINE
 wlan_is_tx_pause(mlan_private * priv, t_u8 * ra)
 {
 	sta_node *sta_ptr = MNULL;
-	if ((sta_ptr = wlan_get_station_entry(priv, ra))) {
+	sta_ptr = wlan_get_station_entry(priv, ra);
+	if (sta_ptr)
 		return sta_ptr->tx_pause;
-	}
 	return MFALSE;
 }
 
@@ -2584,8 +2584,8 @@ wlan_strlen(const char *str)
 static INLINE t_u32
 wlan_isxdigit(t_u8 chr)
 {
-	return ((chr <= 'f' && chr >= 'a') || (chr <= 'F' && chr >= 'A') ||
-		(chr <= '9' && chr >= '0'));
+	return (chr <= 'f' && chr >= 'a') || (chr <= 'F' && chr >= 'A') ||
+		(chr <= '9' && chr >= '0');
 }
 
 /**
@@ -2598,7 +2598,7 @@ wlan_isxdigit(t_u8 chr)
 static INLINE t_u32
 wlan_isspace(t_u8 chr)
 {
-	return (chr <= ' ' && (chr == ' ' || (chr <= 13 && chr >= 9)));
+	return chr <= ' ' && (chr == ' ' || (chr <= 13 && chr >= 9));
 }
 
 /** delay unit */
@@ -2620,12 +2620,13 @@ t_void wlan_delay_func(mlan_adapter * pmadapter, t_u32 delay, t_delay_unit u);
 
 /** Function to check if any command is pending in the queue */
 #define IS_COMMAND_PENDING(pmadapter) ((cmd_ctrl_node *)util_peek_list(pmadapter->pmoal_handle, \
-                                       &pmadapter->cmd_pending_q,\
-                                       pmadapter->callbacks.moal_spin_lock,\
-                                       pmadapter->callbacks.moal_spin_unlock))
+	                                   &pmadapter->cmd_pending_q,\
+	                                   pmadapter->callbacks.moal_spin_lock,\
+	                                   pmadapter->callbacks.moal_spin_unlock))
 
 /** Get BSS number from priv */
-#define GET_BSS_NUM(priv)   (priv)->bss_num
+#define GET_BSS_NUM(priv)   ((priv)->bss_num)
+
 /**
  *  @brief This function returns priv based on the BSS num and BSS type
  *
@@ -2644,7 +2645,7 @@ wlan_get_priv_by_id(mlan_adapter * pmadapter, t_u32 bss_num, t_u32 bss_type)
 		if (pmadapter->priv[i]) {
 			if ((pmadapter->priv[i]->bss_num == bss_num) &&
 			    (pmadapter->priv[i]->bss_type == bss_type))
-				return (pmadapter->priv[i]);
+				return pmadapter->priv[i];
 		}
 	}
 	return MNULL;
@@ -2668,7 +2669,7 @@ wlan_get_priv(mlan_adapter * pmadapter, mlan_bss_role bss_role)
 		if (pmadapter->priv[i]) {
 			if (bss_role == MLAN_BSS_ROLE_ANY ||
 			    GET_BSS_ROLE(pmadapter->priv[i]) == bss_role)
-				return (pmadapter->priv[i]);
+				return pmadapter->priv[i];
 		}
 	}
 	return MNULL;
@@ -2699,7 +2700,8 @@ wlan_count_priv_cond(mlan_adapter * pmadapter,
 		return 0;
 
 	for (i = 0; i < pmadapter->priv_num; i++) {
-		if ((pmpriv = pmadapter->priv[i])) {
+		pmpriv = pmadapter->priv[i];
+		if (pmpriv) {
 			if ((check_cond == MNULL) ||
 			    (check_cond && check_cond(pmpriv))) {
 				if (count_cond(pmpriv))
@@ -2735,7 +2737,8 @@ wlan_do_task_on_privs(mlan_adapter * pmadapter,
 		return 0;
 
 	for (i = 0; i < pmadapter->priv_num; i++) {
-		if ((pmpriv = pmadapter->priv[i])) {
+		pmpriv = pmadapter->priv[i];
+		if (pmpriv) {
 			if ((check_cond == MNULL) ||
 			    (check_cond && check_cond(pmpriv))) {
 				operation(pmpriv);
@@ -2776,7 +2779,8 @@ wlan_get_privs_by_cond(mlan_adapter * pmadapter,
 		return 0;
 
 	for (i = 0; i < pmadapter->priv_num; i++) {
-		if ((pmpriv = pmadapter->priv[i])) {
+		pmpriv = pmadapter->priv[i];
+		if (pmpriv) {
 			if (check_cond(pmpriv)) {
 				ppriv_list[count++] = pmpriv;
 			}
@@ -2821,7 +2825,8 @@ wlan_get_privs_by_two_cond(mlan_adapter * pmadapter,
 		return 0;
 
 	for (i = 0; i < pmadapter->priv_num; i++) {
-		if ((pmpriv = pmadapter->priv[i])) {
+		pmpriv = pmadapter->priv[i];
+		if (pmpriv) {
 			if (and_conditions) {
 				if (check_cond(pmpriv) && check_cond_2(pmpriv)) {
 					ppriv_list[count++] = pmpriv;

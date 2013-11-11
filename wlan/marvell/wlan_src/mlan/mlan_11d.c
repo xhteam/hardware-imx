@@ -31,7 +31,7 @@ Change log:
 #include "mlan_11h.h"
 
 /********************************************************
-                Local Variables
+			Local Variables
 ********************************************************/
 
 #ifdef STA_SUPPORT
@@ -126,11 +126,11 @@ channels for 11J JP 10M channel gap */
 #endif /* STA_SUPPORT */
 
 /********************************************************
-                Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 #ifdef STA_SUPPORT
 /**
@@ -153,13 +153,13 @@ wlan_11d_code_2_region(pmlan_adapter pmadapter, t_u8 code)
 	for (i = 0; i < size; i++) {
 		if (region_code_mapping[i].code == code) {
 			LEAVE();
-			return (region_code_mapping[i].region);
+			return region_code_mapping[i].region;
 		}
 	}
 
 	LEAVE();
 	/* Default is US */
-	return (region_code_mapping[0].region);
+	return region_code_mapping[0].region;
 }
 
 /**
@@ -694,7 +694,7 @@ wlan_11d_set_domain_info(mlan_private * pmpriv,
 }
 
 /********************************************************
-                Global functions
+			Global functions
 ********************************************************/
 
 /**

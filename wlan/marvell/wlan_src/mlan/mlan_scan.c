@@ -35,7 +35,7 @@ Change log:
 #include "mlan_11h.h"
 
 /********************************************************
-                Local Constants
+			Local Constants
 ********************************************************/
 
 /** The maximum number of channels the firmware can scan per command */
@@ -51,29 +51,31 @@ Change log:
 
 /** Memory needed to store a max sized Channel List TLV for a firmware scan */
 #define CHAN_TLV_MAX_SIZE  (sizeof(MrvlIEtypesHeader_t)                  \
-                            + (MRVDRV_MAX_CHANNELS_PER_SPECIFIC_SCAN     \
-                               * sizeof(ChanScanParamSet_t)))
+				+ (MRVDRV_MAX_CHANNELS_PER_SPECIFIC_SCAN \
+				* sizeof(ChanScanParamSet_t)))
 
 /** Memory needed to store supported rate */
 #define RATE_TLV_MAX_SIZE   (sizeof(MrvlIEtypes_RatesParamSet_t) + HOSTCMD_SUPPORTED_RATES)
 
 /** Memory needed to store a max number/size WildCard SSID TLV for a firmware scan */
-#define WILDCARD_SSID_TLV_MAX_SIZE  \
-            (MRVDRV_MAX_SSID_LIST_LENGTH  * (sizeof(MrvlIEtypes_WildCardSsIdParamSet_t) + MRVDRV_MAX_SSID_LENGTH))
+#define WILDCARD_SSID_TLV_MAX_SIZE                     \
+		(MRVDRV_MAX_SSID_LIST_LENGTH  *                \
+		 (sizeof(MrvlIEtypes_WildCardSsIdParamSet_t) + \
+		  MRVDRV_MAX_SSID_LENGTH))
 
 /** WPS TLV MAX size is MAX IE size plus 2 bytes for t_u16 MRVL TLV extension */
 #define WPS_TLV_MAX_SIZE   (sizeof(IEEEtypes_VendorSpecific_t) + 2)
 /** Maximum memory needed for a wlan_scan_cmd_config with all TLVs at max */
 #define MAX_SCAN_CFG_ALLOC (sizeof(wlan_scan_cmd_config)        \
-                            + sizeof(MrvlIEtypes_NumProbes_t)   \
-                            + sizeof(MrvlIETypes_HTCap_t)       \
-                            + CHAN_TLV_MAX_SIZE                 \
-                            + RATE_TLV_MAX_SIZE                 \
-                            + WILDCARD_SSID_TLV_MAX_SIZE        \
-                            + WPS_TLV_MAX_SIZE)
+				+ sizeof(MrvlIEtypes_NumProbes_t)   \
+				+ sizeof(MrvlIETypes_HTCap_t)       \
+				+ CHAN_TLV_MAX_SIZE                 \
+				+ RATE_TLV_MAX_SIZE                 \
+				+ WILDCARD_SSID_TLV_MAX_SIZE        \
+				+ WPS_TLV_MAX_SIZE)
 
 /********************************************************
-                Local Variables
+			Local Variables
 ********************************************************/
 
 /**
@@ -87,11 +89,11 @@ typedef union {
 } wlan_scan_cmd_config_tlv;
 
 /********************************************************
-                Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 /** Cipher suite definition */
 enum cipher_suite {
@@ -181,7 +183,8 @@ is_rsn_oui_present(mlan_adapter * pmadapter, BSSDescriptor_t * pbss_desc,
 			(IEBody *) (((t_u8 *) pbss_desc->prsn_ie->data) +
 				    RSN_GTK_OUI_OFFSET);
 		oui = &rsn_oui[cipher_suite][0];
-		if ((ret = search_oui_in_ie(pmadapter, ie_body, oui))) {
+		ret = search_oui_in_ie(pmadapter, ie_body, oui);
+		if (ret) {
 			LEAVE();
 			return ret;
 		}
@@ -212,7 +215,8 @@ is_wpa_oui_present(mlan_adapter * pmadapter, BSSDescriptor_t * pbss_desc,
 	     ((*(pbss_desc->pwpa_ie)).vend_hdr.element_id == WPA_IE))) {
 		ie_body = (IEBody *) pbss_desc->pwpa_ie->data;
 		oui = &wpa_oui[cipher_suite][0];
-		if ((ret = search_oui_in_ie(pmadapter, ie_body, oui))) {
+		ret = search_oui_in_ie(pmadapter, ie_body, oui);
+		if (ret) {
 			LEAVE();
 			return ret;
 		}
@@ -1292,8 +1296,8 @@ wlan_ret_802_11_scan_get_tlv_ptrs(IN pmlan_adapter pmadapter,
 		}
 
 		if (*pptlv) {
-			// HEXDUMP("SCAN_RESP: TLV Buf", (t_u8 *)*pptlv+4,
-			// tlv_len);
+			/* HEXDUMP("SCAN_RESP: TLV Buf", (t_u8 *)*pptlv+4,
+			   tlv_len); */
 			break;
 		}
 
@@ -2660,7 +2664,7 @@ wlan_scan_delete_ssid_table_entry(IN mlan_private * pmpriv,
 }
 
 /********************************************************
-                Global Functions
+			Global Functions
 ********************************************************/
 
 /**

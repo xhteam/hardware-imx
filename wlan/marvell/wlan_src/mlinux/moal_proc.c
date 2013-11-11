@@ -503,7 +503,7 @@ woal_string_to_number(char *s)
 			break;
 	}
 
-	return (r * pn);
+	return r * pn;
 }
 
 /**

@@ -33,11 +33,11 @@ Change log:
 #include "mlan_11h.h"
 
 /********************************************************
-        Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-        Local Functions
+			Local Functions
 ********************************************************/
 
 /**
@@ -60,7 +60,7 @@ wlan_handle_disconnect_event(pmlan_private pmpriv)
 }
 
 /********************************************************
-        Global Functions
+			Global Functions
 ********************************************************/
 /**
  *  @brief This function handles disconnect event, reports disconnect
@@ -412,13 +412,13 @@ wlan_ops_sta_process_event(IN t_void * priv)
 
 	case EVENT_STOP_TX:
 		PRINTM(MEVENT, "EVENT: Stop Tx (%#x)\n", eventcause);
-		wlan_11h_tx_disable(pmpriv);	// this fn will send event up
-						// to MOAL
+		wlan_11h_tx_disable(pmpriv);	/* this fn will send event up
+						   to MOAL */
 		break;
 	case EVENT_START_TX:
 		PRINTM(MEVENT, "EVENT: Start Tx (%#x)\n", eventcause);
-		wlan_11h_tx_enable(pmpriv);	// this fn will send event up
-						// to MOAL
+		wlan_11h_tx_enable(pmpriv);	/* this fn will send event up
+						   to MOAL */
 		break;
 	case EVENT_CHANNEL_SWITCH:
 		PRINTM(MEVENT, "EVENT: Channel Switch (%#x)\n", eventcause);
@@ -676,6 +676,7 @@ wlan_ops_sta_process_event(IN t_void * priv)
 	case EVENT_REMAIN_ON_CHANNEL_EXPIRED:
 		PRINTM(MEVENT, "EVENT: REMAIN_ON_CHANNEL_EXPIRED reason=%d\n",
 		       *(t_u16 *) pmadapter->event_body);
+		wlan_recv_event(pmpriv, MLAN_EVENT_ID_FLUSH_RX_WORK, MNULL);
 		wlan_recv_event(pmpriv, MLAN_EVENT_ID_FW_REMAIN_ON_CHAN_EXPIRED,
 				MNULL);
 		break;

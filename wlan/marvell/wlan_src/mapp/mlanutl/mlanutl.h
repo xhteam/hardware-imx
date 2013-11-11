@@ -75,6 +75,15 @@ typedef enum { FALSE, TRUE } boolean;
 #define     le32_to_cpu(x)  (x)
 #endif
 
+/** TLV header */
+#define TLVHEADER       /** Tag */      \
+                        t_u16 tag;      \
+                        /** Length */   \
+                        t_u16 length
+
+/** Length of TLV header */
+#define TLVHEADER_LEN  4
+
 /** Character, 1 byte */
 typedef signed char t_s8;
 /** Unsigned character, 1 byte */

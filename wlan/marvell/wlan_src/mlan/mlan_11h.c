@@ -36,7 +36,7 @@ Change Log:
 #endif
 
 /********************************************************
-                Local Variables
+			Local Variables
 ********************************************************/
 
 /** Default IBSS DFS recovery interval (in TBTTs); used for adhoc start */
@@ -120,11 +120,11 @@ typedef struct {
 } wlan_11h_tpc_info_param_t;
 
 /********************************************************
-                Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 
 /**
@@ -145,7 +145,7 @@ wlan_11h_get_random_num(pmlan_adapter pmadapter)
 	usec = (usec & 0xFFFF) + (usec >> 16);
 
 	LEAVE();
-	return ((usec << 16) | sec);
+	return (usec << 16) | sec;
 }
 
 /**
@@ -188,7 +188,7 @@ wlan_11h_convert_ieee_to_mrvl_ie(mlan_adapter * pmadapter,
 
 	LEAVE();
 	/* Return the number of bytes appended to pout_buf */
-	return (sizeof(mrvl_ie_hdr) + pin_ie[1]);
+	return sizeof(mrvl_ie_hdr) + pin_ie[1];
 }
 
 #ifdef STA_SUPPORT
@@ -262,8 +262,7 @@ wlan_11h_set_ibss_dfs_ie(mlan_private * priv, IEEEtypes_IBSS_DFS_t * pdfs)
 			 + num_chans * sizeof(IEEEtypes_ChannelMap_t));
 
 		LEAVE();
-		return (pdfs->len + sizeof(pdfs->len) +
-			sizeof(pdfs->element_id));
+		return pdfs->len + sizeof(pdfs->len) + sizeof(pdfs->element_id);
 	}
 
 	/* Ensure the element is zeroed out for an invalid return */
@@ -878,7 +877,7 @@ wlan_11h_is_enabled(mlan_private * priv)
 {
 	ENTER();
 	LEAVE();
-	return (priv->intf_state_11h.is_11h_enabled);
+	return priv->intf_state_11h.is_11h_enabled;
 }
 
 /**
@@ -895,7 +894,7 @@ wlan_11h_is_slave_radar_det_active(mlan_private * priv)
 {
 	ENTER();
 	LEAVE();
-	return (priv->adapter->state_11h.is_slave_radar_det_active);
+	return priv->adapter->state_11h.is_slave_radar_det_active;
 }
 
 /**
@@ -1443,7 +1442,7 @@ wlan_11h_add_dfs_timestamp(mlan_adapter * pmadapter, t_u8 repr, t_u8 channel)
 }
 
 /********************************************************
-                Global functions
+			Global functions
 ********************************************************/
 
 /**
@@ -1460,7 +1459,7 @@ wlan_11h_is_master_radar_det_active(mlan_private * priv)
 {
 	ENTER();
 	LEAVE();
-	return (priv->adapter->state_11h.is_master_radar_det_active);
+	return priv->adapter->state_11h.is_master_radar_det_active;
 }
 
 /**
@@ -1586,7 +1585,7 @@ wlan_11h_is_active(mlan_private * priv)
 {
 	ENTER();
 	LEAVE();
-	return (priv->intf_state_11h.is_11h_active);
+	return priv->intf_state_11h.is_11h_active;
 }
 
 /**

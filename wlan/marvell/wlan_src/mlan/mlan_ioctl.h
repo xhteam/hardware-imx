@@ -1521,7 +1521,7 @@ enum _mlan_psk_type {
 /** The key index to indicate default key */
 #define MLAN_KEY_INDEX_DEFAULT        0x000000ff
 /** Maximum key length */
-// #define MLAN_MAX_KEY_LENGTH        32
+/* #define MLAN_MAX_KEY_LENGTH        32 */
 /** Minimum passphrase length */
 #define MLAN_MIN_PASSPHRASE_LENGTH    8
 /** Maximum passphrase length */

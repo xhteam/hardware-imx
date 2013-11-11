@@ -23,7 +23,7 @@
 #include "moal_sta_cfg80211.h"
 #include "moal_eth_ioctl.h"
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
 static void
 #else
 static int
@@ -32,7 +32,7 @@ static int
 woal_cfg80211_reg_notifier(struct wiphy *wiphy,
 			   struct regulatory_request *request);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 static int woal_cfg80211_scan(struct wiphy *wiphy,
 			      struct cfg80211_scan_request *request);
 #else
@@ -61,17 +61,17 @@ static int woal_cfg80211_dump_survey(struct wiphy *wiphy,
 static int woal_cfg80211_set_power_mgmt(struct wiphy *wiphy,
 					struct net_device *dev, bool enabled,
 					int timeout);
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35) || defined(COMPAT_WIRELESS)
 static int woal_cfg80211_set_cqm_rssi_config(struct wiphy *wiphy,
 					     struct net_device *dev,
 					     s32 rssi_thold, u32 rssi_hyst);
 #endif
 
 static int woal_cfg80211_set_tx_power(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 				      struct wireless_dev *wdev,
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36) && !defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36) && !defined(COMPAT_WIRELESS)
 				      enum tx_power_setting type,
 #else
 				      enum nl80211_tx_power_setting type,
@@ -88,7 +88,7 @@ static int woal_cfg80211_leave_ibss(struct wiphy *wiphy,
 #if defined(WIFI_DIRECT_SUPPORT)
 #if LINUX_VERSION_CODE >= WIFI_DIRECT_KERNEL_VERSION
 static int woal_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 					     struct wireless_dev *wdev,
 #else
 					     struct net_device *dev,
@@ -96,20 +96,20 @@ static int woal_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
 					     u64 cookie);
 
 static int woal_cfg80211_remain_on_channel(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 					   struct wireless_dev *wdev,
 #else
 					   struct net_device *dev,
 #endif
 					   struct ieee80211_channel *chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 					   enum nl80211_channel_type
 					   channel_type,
 #endif
 					   unsigned int duration, u64 * cookie);
 
 static int woal_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 						  struct wireless_dev *wdev,
 #else
 						  struct net_device *dev,
@@ -118,14 +118,14 @@ static int woal_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy,
 #endif /* KERNEL_VERSION */
 #endif /* WIFI_DIRECT_SUPPORT && V14_FEATURE */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 int woal_cfg80211_sched_scan_start(struct wiphy *wiphy,
 				   struct net_device *dev,
 				   struct cfg80211_sched_scan_request *request);
 int woal_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev);
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)|| defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)|| defined(COMPAT_WIRELESS)
 int woal_cfg80211_resume(struct wiphy *wiphy);
 int woal_cfg80211_suspend(struct wiphy *wiphy, struct cfg80211_wowlan *wow);
 #endif
@@ -140,7 +140,7 @@ static struct cfg80211_ops woal_cfg80211_ops = {
 	.dump_station = woal_cfg80211_dump_station,
 	.dump_survey = woal_cfg80211_dump_survey,
 	.set_wiphy_params = woal_cfg80211_set_wiphy_params,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0)
 	.set_channel = woal_cfg80211_set_channel,
 #endif
 	.join_ibss = woal_cfg80211_join_ibss,
@@ -151,24 +151,24 @@ static struct cfg80211_ops woal_cfg80211_ops = {
 	.set_power_mgmt = woal_cfg80211_set_power_mgmt,
 	.set_tx_power = woal_cfg80211_set_tx_power,
 	.set_bitrate_mask = woal_cfg80211_set_bitrate_mask,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 	.sched_scan_start = woal_cfg80211_sched_scan_start,
 	.sched_scan_stop = woal_cfg80211_sched_scan_stop,
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)|| defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)|| defined(COMPAT_WIRELESS)
 	.suspend = woal_cfg80211_suspend,
 	.resume = woal_cfg80211_resume,
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38) || defined(COMPAT_WIRELESS)
 	.set_antenna = woal_cfg80211_set_antenna,
 #endif
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35) || defined(COMPAT_WIRELESS)
 	.set_cqm_rssi_config = woal_cfg80211_set_cqm_rssi_config,
 #endif
 #ifdef UAP_CFG80211
 	.add_virtual_intf = woal_cfg80211_add_virtual_intf,
 	.del_virtual_intf = woal_cfg80211_del_virtual_intf,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0)
 	.start_ap = woal_cfg80211_add_beacon,
 	.change_beacon = woal_cfg80211_set_beacon,
 	.stop_ap = woal_cfg80211_del_beacon,
@@ -178,7 +178,7 @@ static struct cfg80211_ops woal_cfg80211_ops = {
 	.del_beacon = woal_cfg80211_del_beacon,
 #endif
 	.del_station = woal_cfg80211_del_station,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37) || defined(COMPAT_WIRELESS)
 	.mgmt_frame_register = woal_cfg80211_mgmt_frame_register,
 	.mgmt_tx = woal_cfg80211_mgmt_tx,
 #endif
@@ -201,7 +201,7 @@ typedef struct _region_code_t {
 /********************************************************
 				Local Variables
 ********************************************************/
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37) || defined(COMPAT_WIRELESS)
 static const struct ieee80211_txrx_stypes
  ieee80211_mgmt_stypes[NUM_NL80211_IFTYPES] = {
 	[NL80211_IFTYPE_ADHOC] = {
@@ -260,7 +260,7 @@ static const struct ieee80211_txrx_stypes
 extern moal_handle *m_handle[];
 extern int hw_test;
 /** Region alpha2 string */
-char *reg_alpha2 = NULL;
+char *reg_alpha2;
 
 /********************************************************
 				Global Variables
@@ -1050,11 +1050,11 @@ woal_inform_bss_from_scan_result(moal_private * priv,
 								   [i].rssi),
 						  GFP_KERNEL);
 			if (pub) {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 				pub->len_information_elements =
 					pub->len_beacon_ies;
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
 				cfg80211_put_bss(priv->wdev->wiphy, pub);
 #else
 				cfg80211_put_bss(pub);
@@ -1132,7 +1132,7 @@ woal_cfg80211_inform_ibss_bss(moal_private * priv,
 				  beacon_interval, ie_buf, ie_len,
 				  signal.bcn_rssi_avg, GFP_KERNEL);
 	if (bss)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
 		cfg80211_put_bss(priv->wdev->wiphy, bss);
 #else
 		cfg80211_put_bss(bss);
@@ -1348,7 +1348,7 @@ woal_cfg80211_assoc(moal_private * priv, void *sme)
 		ssid = ibss_param->ssid;
 		ssid_len = ibss_param->ssid_len;
 		bssid = ibss_param->bssid;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 		channel = ibss_param->channel;
 #else
 		channel = ibss_param->chandef.chan;
@@ -1378,7 +1378,7 @@ woal_cfg80211_assoc(moal_private * priv, void *sme)
 				       WLAN_CAPABILITY_ESS);
 		if (bss) {
 			woal_process_country_ie(priv, bss);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
 			cfg80211_put_bss(priv->wdev->wiphy, bss);
 #else
 			cfg80211_put_bss(bss);
@@ -1660,7 +1660,7 @@ done:
 	return ret;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) || defined(COMPAT_WIRELESS)
 /**
  *  @brief Set/Get DTIM period
  *
@@ -1730,7 +1730,7 @@ woal_cfg80211_dump_station_info(moal_private * priv, struct station_info *sinfo)
 	t_u16 Rates[12] =
 		{ 0x02, 0x04, 0x0B, 0x16, 0x0C, 0x12, 0x18, 0x24, 0x30, 0x48,
 	      0x60, 0x6c };
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) || defined(COMPAT_WIRELESS)
 	mlan_bss_info bss_info;
 	t_u8 dtim_period = 0;
 #endif
@@ -1785,7 +1785,7 @@ woal_cfg80211_dump_station_info(moal_private * priv, struct station_info *sinfo)
 	sinfo->tx_packets = priv->stats.tx_packets;
 	sinfo->signal = signal.bcn_rssi_avg;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) || defined(COMPAT_WIRELESS)
 	/* Update BSS information */
 	sinfo->filled |= STATION_INFO_BSS_PARAM;
 	sinfo->bss_param.flags = 0;
@@ -1827,7 +1827,7 @@ done:
  *
  * @return                0
  */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
 static void
 #else
 static int
@@ -1837,7 +1837,7 @@ woal_cfg80211_reg_notifier(struct wiphy *wiphy,
 {
 	moal_private *priv = NULL;
 	moal_handle *handle = (moal_handle *) woal_get_wiphy_priv(wiphy);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
 	int ret = 0;
 #endif
 
@@ -1847,7 +1847,7 @@ woal_cfg80211_reg_notifier(struct wiphy *wiphy,
 	if (!priv) {
 		PRINTM(MFATAL, "Unable to get priv in %s()\n", __FUNCTION__);
 		LEAVE();
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
 		return -EINVAL;
 #else
 		return;
@@ -1859,7 +1859,7 @@ woal_cfg80211_reg_notifier(struct wiphy *wiphy,
 	if (MTRUE == is_cfg80211_special_region_code(request->alpha2)) {
 		PRINTM(MIOCTL, "Skip configure special region code\n");
 		LEAVE();
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
 		return ret;
 #else
 		return;
@@ -1891,12 +1891,12 @@ woal_cfg80211_reg_notifier(struct wiphy *wiphy,
 	    (request->initiator != NL80211_REGDOM_SET_BY_COUNTRY_IE))
 		woal_send_domain_info_cmd_fw(priv);
 	LEAVE();
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
 	return ret;
 #endif
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 /**
  * @brief Request the driver to do a scan. Always returning
  * zero meaning that the scan request is given to driver,
@@ -1928,7 +1928,7 @@ woal_cfg80211_scan(struct wiphy *wiphy, struct net_device *dev,
 		   struct cfg80211_scan_request *request)
 #endif
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 	struct net_device *dev = request->wdev->netdev;
 #endif
 	moal_private *priv = (moal_private *) woal_get_netdev_priv(dev);
@@ -1953,7 +1953,7 @@ woal_cfg80211_scan(struct wiphy *wiphy, struct net_device *dev,
 		LEAVE();
 		return -EBUSY;
 	}
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 	if (priv->last_event & EVENT_BG_SCAN_REPORT) {
 		PRINTM(MINFO, "block scan while pending BGSCAN result\n");
 		priv->last_event = 0;
@@ -2097,7 +2097,7 @@ woal_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 #endif
 	if (priv->wdev->iftype != NL80211_IFTYPE_STATION
 #if defined(WIFI_DIRECT_SUPPORT)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37) || defined(COMPAT_WIRELESS)
 	    && priv->wdev->iftype != NL80211_IFTYPE_P2P_CLIENT
 #endif /* KERNEL_VERSION */
 #endif /* WIFI_DIRECT_SUPPORT && V14_FEATURE */
@@ -2538,10 +2538,10 @@ woal_cfg80211_set_power_mgmt(struct wiphy *wiphy,
  */
 static int
 woal_cfg80211_set_tx_power(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 			   struct wireless_dev *wdev,
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36) && !defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36) && !defined(COMPAT_WIRELESS)
 			   enum tx_power_setting type,
 #else
 			   enum nl80211_tx_power_setting type,
@@ -2576,7 +2576,7 @@ woal_cfg80211_set_tx_power(struct wiphy *wiphy,
 	return ret;
 }
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35) || defined(COMPAT_WIRELESS)
 /**
  * CFG802.11 operation handler for connection quality monitoring.
  *
@@ -2675,7 +2675,7 @@ woal_cfg80211_remain_on_channel_cfg(moal_private * priv,
 	return ret;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 /**
  * @brief tx mgmt frame
  *
@@ -2703,7 +2703,7 @@ woal_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
 				  struct net_device *dev, u64 cookie)
 #endif
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 	struct net_device *dev = wdev->netdev;
 #endif
 	moal_private *priv = (moal_private *) woal_get_netdev_priv(dev);
@@ -2733,7 +2733,7 @@ woal_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
 		}
 		if (priv->phandle->cookie) {
 			cfg80211_remain_on_channel_expired(
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
 								  remain_priv->
 								  netdev,
 #else
@@ -2745,7 +2745,7 @@ woal_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
 								  cookie,
 								  &priv->
 								  phandle->chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 								  priv->
 								  phandle->
 								  channel_type,
@@ -2761,7 +2761,7 @@ done:
 	return ret;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 /**
  * @brief Make chip remain on channel
  *
@@ -2778,7 +2778,7 @@ static int
 woal_cfg80211_remain_on_channel(struct wiphy *wiphy,
 				struct wireless_dev *wdev,
 				struct ieee80211_channel *chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 				enum nl80211_channel_type channel_type,
 #endif
 				unsigned int duration, u64 * cookie)
@@ -2803,7 +2803,7 @@ woal_cfg80211_remain_on_channel(struct wiphy *wiphy,
 				unsigned int duration, u64 * cookie)
 #endif
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 	struct net_device *dev = wdev->netdev;
 #endif
 	moal_private *priv = (moal_private *) woal_get_netdev_priv(dev);
@@ -2819,7 +2819,10 @@ woal_cfg80211_remain_on_channel(struct wiphy *wiphy,
 		goto done;
 	}
 	/** cancel previous remain on channel */
-	if (priv->phandle->remain_on_channel) {
+	if (priv->phandle->remain_on_channel &&
+	    ((priv->phandle->chan.center_freq != chan->center_freq)
+	     || (priv->phandle->card_type == CARD_TYPE_SD8787)
+	    )) {
 		remain_priv =
 			priv->phandle->priv[priv->phandle->remain_bss_index];
 		if (!remain_priv) {
@@ -2845,7 +2848,7 @@ woal_cfg80211_remain_on_channel(struct wiphy *wiphy,
 	if (MLAN_STATUS_SUCCESS !=
 	    woal_cfg80211_remain_on_channel_cfg(priv, MOAL_IOCTL_WAIT,
 						MFALSE, &status, chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 						channel_type,
 #else
 						0,
@@ -2866,19 +2869,19 @@ woal_cfg80211_remain_on_channel(struct wiphy *wiphy,
 		priv->phandle->remain_on_channel = MTRUE;
 		priv->phandle->remain_bss_index = priv->bss_index;
 		priv->phandle->cookie = *cookie;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 		priv->phandle->channel_type = channel_type;
 #endif
 		memcpy(&priv->phandle->chan, chan,
 		       sizeof(struct ieee80211_channel));
 		cfg80211_ready_on_channel(
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
 						 dev,
 #else
 						 priv->wdev,
 #endif
 						 *cookie, chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 						 channel_type,
 #endif
 						 duration, GFP_KERNEL);
@@ -2893,7 +2896,7 @@ done:
 	return ret;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 /**
  * @brief Cancel remain on channel
  *
@@ -2921,7 +2924,7 @@ woal_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy,
 				       struct net_device *dev, u64 cookie)
 #endif
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 	struct net_device *dev = wdev->netdev;
 #endif
 	moal_private *priv = (moal_private *) woal_get_netdev_priv(dev);
@@ -2957,7 +2960,7 @@ done:
 #endif /* KERNEL_VERSION */
 #endif /* WIFI_DIRECT_SUPPORT && V14_FEATURE */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 /**
  * @brief start sched scan
  *
@@ -3087,7 +3090,7 @@ woal_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev)
 }
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 /**
  * @brief cfg80211_resume handler
  *
@@ -3277,7 +3280,7 @@ woal_start_roaming(moal_private * priv)
 		memset(&assoc_rsp, 0, sizeof(mlan_ds_misc_assoc_rsp));
 		woal_get_assoc_rsp(priv, &assoc_rsp);
 		passoc_rsp = (IEEEtypes_AssocRsp_t *) assoc_rsp.assoc_resp_buf;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) || defined(COMPAT_WIRELESS)
 		cfg80211_roamed(priv->netdev, NULL, priv->cfg_bssid,
 				priv->sme_current.ie, priv->sme_current.ie_len,
 				passoc_rsp->ie_buffer,
@@ -3378,7 +3381,7 @@ woal_cfg80211_init_wiphy(moal_private * priv, t_u8 wait_option)
 	int retry_count, rts_thr, frag_thr;
 	struct wiphy *wiphy = NULL;
 	mlan_ioctl_req *req = NULL;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38) || defined(COMPAT_WIRELESS)
 	mlan_ds_radio_cfg *radio = NULL;
 #endif
 	mlan_ds_11n_cfg *cfg_11n = NULL;
@@ -3428,7 +3431,7 @@ woal_cfg80211_init_wiphy(moal_private * priv, t_u8 wait_option)
 	if (req)
 		kfree(req);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 38) || defined(COMPAT_WIRELESS)
 	/* Get antenna modes */
 	req = woal_alloc_mlan_ioctl_req(sizeof(mlan_ds_radio_cfg));
 	if (req == NULL) {
@@ -3461,7 +3464,7 @@ woal_cfg80211_init_wiphy(moal_private * priv, t_u8 wait_option)
 	wiphy->retry_short = (t_u8) retry_count;
 	wiphy->max_scan_ie_len = MAX_IE_SIZE;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37) || defined(COMPAT_WIRELESS)
 	wiphy->mgmt_stypes = ieee80211_mgmt_stypes;
 #endif
 #if defined(WIFI_DIRECT_SUPPORT)
@@ -3555,7 +3558,7 @@ woal_register_cfg80211(moal_private * priv)
 	wiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
 
 	wiphy->flags = 0;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
 	wiphy->flags |=
 		WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL | WIPHY_FLAG_OFFCHAN_TX;
 	wiphy->flags |=
@@ -3564,7 +3567,7 @@ woal_register_cfg80211(moal_private * priv)
 #ifdef ANDROID_KERNEL
 	wiphy->flags |= WIPHY_FLAG_HAVE_AP_SME;
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 	wiphy->flags |= WIPHY_FLAG_SUPPORTS_SCHED_SCAN;
 	wiphy->max_sched_scan_ssids = MRVDRV_MAX_SSID_LIST_LENGTH;
 	wiphy->max_sched_scan_ie_len = MAX_IE_SIZE;
@@ -3577,7 +3580,7 @@ woal_register_cfg80211(moal_private * priv)
 	wdev_priv = wiphy_priv(wiphy);
 	*(unsigned long *)wdev_priv = (unsigned long)priv->phandle;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 39) || defined(COMPAT_WIRELESS)
 	set_wiphy_dev(wiphy, (struct device *)priv->phandle->hotplug_device);
 #endif
 	/* Set phy name */

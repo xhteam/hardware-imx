@@ -34,15 +34,15 @@ Change log:
 #include "mlan_11h.h"
 
 /********************************************************
-                Local Variables
+			Local Variables
 ********************************************************/
 
 /********************************************************
-                Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 /**
  *  @brief enable adhoc aes key
@@ -1829,9 +1829,8 @@ wlan_power_ioctl_set_power_ext(IN pmlan_adapter pmadapter,
 	case 4:
 		ht_bw = (data[0] & TX_RATE_HT_BW40_BIT) ? HT_BW_40 : HT_BW_20;
 		data[0] &= ~TX_RATE_HT_BW40_BIT;
-		if (!
-		    (mod_class =
-		     wlan_get_modulation_class(pmadapter, data[0]))) {
+		mod_class = wlan_get_modulation_class(pmadapter, data[0]);
+		if (!mod_class) {
 			pioctl_req->status_code = MLAN_ERROR_CMD_RESP_FAIL;
 			ret = MLAN_STATUS_FAILURE;
 			break;
@@ -4457,7 +4456,7 @@ done:
 	return ret;
 }
 
-#define FLTR_BUF_IP_OFFSET      24
+#define FLTR_BUF_IP_OFFSET              24
 #define FLTR_BUF_IP_OFFSET_2_IP_1       9
 #define FLTR_BUF_IP_OFFSET_2_IP_2       26
 
@@ -4646,7 +4645,7 @@ wlan_misc_ioctl_mef_cfg(IN pmlan_adapter pmadapter,
 		break;
 	case MEF_CFG_AUTO_ARP_RESP:
 		PRINTM(MINFO, "Enable auto ARP response\n");
-		// TODO
+		/* TODO */
 		break;
 	case MEF_CFG_HOSTCMD:
 		PRINTM(MINFO, "MEF hostcmd from MOAL\n");
@@ -5250,7 +5249,7 @@ start_config:
 }
 
 /********************************************************
-                Global Functions
+			Global Functions
 ********************************************************/
 
 /**

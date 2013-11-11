@@ -30,7 +30,7 @@ Change log:
 #include        "moal_uap_priv.h"
 
 /********************************************************
-                Global Variables
+			Global Variables
 ********************************************************/
 typedef struct _chan_to_freq_t {
     /** Channel */
@@ -104,7 +104,7 @@ const chan_to_freq_t chan_to_freq[] = {
 #define freq_to_chan(x) ((((x) - 2412) / 5) + 1)
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 
 /**
@@ -1743,7 +1743,7 @@ static const iw_handler woal_private_handler[] = {
 };
 
 /********************************************************
-                Global Functions
+			Global Functions
 ********************************************************/
 
 /** wlan_handler_def */

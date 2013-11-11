@@ -55,7 +55,7 @@ Change log:
 		Local Variables
 ********************************************************/
 
-#define KERN_VERSION    "3X"
+#define KERN_VERSION    "26"
 
 /** Driver version */
 char driver_version[] =
@@ -740,7 +740,6 @@ woal_init_sw(moal_handle * handle)
 	/* PnP and power profile */
 	handle->surprise_removed = MFALSE;
 	init_waitqueue_head(&handle->init_wait_q);
-	init_waitqueue_head(&handle->mlan_wait_q);
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 29)
 	spin_lock_init(&handle->queue_lock);
 #endif

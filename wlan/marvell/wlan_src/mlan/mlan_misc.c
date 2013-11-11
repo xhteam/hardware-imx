@@ -38,11 +38,11 @@ Change Log:
 #endif
 
 /********************************************************
-                Local Variables
+			Local Variables
 ********************************************************/
 
 /********************************************************
-                Global Variables
+			Global Variables
 ********************************************************/
 #if defined(STA_SUPPORT) && defined(UAP_SUPPORT)
 extern mlan_operations *mlan_ops[];
@@ -50,7 +50,7 @@ extern mlan_operations *mlan_ops[];
 extern t_u8 ac_to_tid[4][2];
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 
 /** Custom IE auto index and mask */
@@ -275,7 +275,7 @@ wlan_custom_ioctl_auto_delete(IN pmlan_private pmpriv,
 }
 
 /********************************************************
-                Global Functions
+			Global Functions
 ********************************************************/
 
 /**
@@ -1557,12 +1557,13 @@ wlan_get_station_entry(mlan_private * priv, t_u8 * mac)
 		LEAVE();
 		return MNULL;
 	}
-	if (!(sta_ptr = (sta_node *) util_peek_list(priv->adapter->pmoal_handle,
-						    &priv->sta_list,
-						    priv->adapter->callbacks.
-						    moal_spin_lock,
-						    priv->adapter->callbacks.
-						    moal_spin_unlock))) {
+	sta_ptr = (sta_node *) util_peek_list(priv->adapter->pmoal_handle,
+					      &priv->sta_list,
+					      priv->adapter->callbacks.
+					      moal_spin_lock,
+					      priv->adapter->callbacks.
+					      moal_spin_unlock);
+	if (!sta_ptr) {
 		LEAVE();
 		return MNULL;
 	}
@@ -1638,7 +1639,8 @@ wlan_delete_station_entry(mlan_private * priv, t_u8 * mac)
 	ENTER();
 	pmadapter->callbacks.moal_spin_lock(pmadapter->pmoal_handle,
 					    priv->wmm.ra_list_spinlock);
-	if ((sta_ptr = wlan_get_station_entry(priv, mac))) {
+	sta_ptr = wlan_get_station_entry(priv, mac);
+	if (sta_ptr) {
 		util_unlink_list(priv->adapter->pmoal_handle, &priv->sta_list,
 				 (pmlan_linked_list) sta_ptr,
 				 priv->adapter->callbacks.moal_spin_lock,

@@ -647,7 +647,7 @@ moal_send_packet_complete(IN t_void * pmoal_handle,
 	moal_private *priv = NULL;
 	moal_handle *handle = (moal_handle *) pmoal_handle;
 	struct sk_buff *skb = NULL;
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,29)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 29)
 	t_u32 tid = 0;
 	t_u32 index = 0;
 #endif
@@ -671,7 +671,7 @@ moal_send_packet_complete(IN t_void * pmoal_handle,
 				} else {
 					priv->stats.tx_errors++;
 				}
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,29)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 29)
 				tid = pmbuf->priority;
 				index = mlan_select_wmm_queue(priv->phandle->
 							      pmlan_adapter,
@@ -1132,7 +1132,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 #endif
 #ifdef STA_CFG80211
 		if (IS_STA_CFG80211(cfg80211_wext)) {
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35) || defined(COMPAT_WIRELESS)
 			cfg80211_cqm_rssi_notify(priv->netdev,
 						 NL80211_CQM_RSSI_THRESHOLD_EVENT_LOW,
 						 GFP_KERNEL);
@@ -1154,7 +1154,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 #ifdef STA_CFG80211
 		if (IS_STA_CFG80211(cfg80211_wext)) {
 			if (!priv->mrvl_rssi_low) {
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35) || defined(COMPAT_WIRELESS)
 				cfg80211_cqm_rssi_notify(priv->netdev,
 							 NL80211_CQM_RSSI_THRESHOLD_EVENT_HIGH,
 							 GFP_KERNEL);
@@ -1250,7 +1250,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 						   CUS_EVT_PRE_BEACON_LOST);
 #endif
 #ifdef STA_CFG80211
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35) || defined(COMPAT_WIRELESS)
 		if (IS_STA_CFG80211(cfg80211_wext)) {
 			struct cfg80211_bss *bss = NULL;
 			bss = cfg80211_get_bss(priv->wdev->wiphy, NULL,
@@ -1309,6 +1309,9 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 	case MLAN_EVENT_ID_DRV_DEFER_HANDLING:
 		queue_work(priv->phandle->workqueue, &priv->phandle->main_work);
 		break;
+	case MLAN_EVENT_ID_FLUSH_RX_WORK:
+		flush_workqueue(priv->phandle->rx_workqueue);
+		break;
 	case MLAN_EVENT_ID_DRV_DBG_DUMP:
 		priv->phandle->driver_state = MTRUE;
 		woal_moal_debug_info(priv, NULL, MFALSE);
@@ -1327,7 +1330,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 #ifdef STA_CFG80211
 		if (IS_STA_CFG80211(cfg80211_wext)) {
 			priv->last_event |= EVENT_BG_SCAN_REPORT;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 			if (priv->sched_scanning &&
 			    !priv->phandle->cfg80211_suspend) {
 				mlan_scan_resp scan_resp;
@@ -1347,7 +1350,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 		break;
 	case MLAN_EVENT_ID_FW_BG_SCAN_STOPPED:
 #ifdef STA_CFG80211
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 		if (IS_STA_CFG80211(cfg80211_wext)) {
 			if (priv->sched_scanning) {
 				cfg80211_sched_scan_stopped(priv->wdev->wiphy);
@@ -1360,7 +1363,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 		break;
 	case MLAN_EVENT_ID_DRV_BGSCAN_RESULT:
 #ifdef STA_CFG80211
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) || defined(COMPAT_WIRELESS)
 		if (IS_STA_CFG80211(cfg80211_wext)) {
 			if (priv->sched_scanning &&
 			    !priv->phandle->cfg80211_suspend) {
@@ -1460,22 +1463,21 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 		break;
 	case MLAN_EVENT_ID_DRV_HS_DEACTIVATED:
 #ifdef STA_SUPPORT
+		pmpriv = woal_get_priv((moal_handle *) pmoal_handle,
+				       MLAN_BSS_ROLE_STA);
 #ifdef STA_WEXT
-		if (IS_STA_WEXT(cfg80211_wext) && (pmpriv = woal_get_priv((moal_handle *) pmoal_handle, MLAN_BSS_ROLE_STA))) {
+		if (IS_STA_WEXT(cfg80211_wext) && pmpriv)
 			woal_send_iwevcustom_event(pmpriv,
 						   CUS_EVT_HS_DEACTIVATED);
-		}
 #endif /* STA_WEXT */
-		if ((pmpriv =
-		     woal_get_priv((moal_handle *) pmoal_handle,
-				   MLAN_BSS_ROLE_STA)))
+		if (pmpriv)
 			woal_broadcast_event(pmpriv, CUS_EVT_HS_DEACTIVATED,
 					     strlen(CUS_EVT_HS_DEACTIVATED));
 #endif /* STA_SUPPORT */
 #if defined(UAP_SUPPORT)
-		if ((pmpriv =
-		     woal_get_priv((moal_handle *) pmoal_handle,
-				   MLAN_BSS_ROLE_UAP))) {
+		pmpriv = woal_get_priv((moal_handle *) pmoal_handle,
+				       MLAN_BSS_ROLE_UAP);
+		if (pmpriv) {
 			pmevent->event_id = UAP_EVENT_ID_DRV_HS_DEACTIVATED;
 			woal_broadcast_event(pmpriv,
 					     (t_u8 *) & pmevent->event_id,
@@ -1498,15 +1500,12 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 				     pmevent->event_len);
 #ifdef STA_SUPPORT
 #ifdef STA_CFG80211
-		if (IS_STA_CFG80211(cfg80211_wext)) {
-			if ((pmpriv =
-			     woal_get_priv((moal_handle *) pmoal_handle,
-					   MLAN_BSS_ROLE_STA)))
-				woal_set_scan_time(pmpriv,
-						   ACTIVE_SCAN_CHAN_TIME,
-						   PASSIVE_SCAN_CHAN_TIME,
-						   MIN_SPECIFIC_SCAN_CHAN_TIME);
-		}
+		pmpriv = woal_get_priv((moal_handle *) pmoal_handle,
+				       MLAN_BSS_ROLE_STA);
+		if (IS_STA_CFG80211(cfg80211_wext) && pmpriv)
+			woal_set_scan_time(pmpriv, ACTIVE_SCAN_CHAN_TIME,
+					   PASSIVE_SCAN_CHAN_TIME,
+					   MIN_SPECIFIC_SCAN_CHAN_TIME);
 #endif
 #endif
 		break;
@@ -1533,7 +1532,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 			priv->phandle->remain_on_channel = MFALSE;
 			if (priv->phandle->cookie) {
 				cfg80211_remain_on_channel_expired(
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
 									  priv->
 									  netdev,
 #else
@@ -1546,7 +1545,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 									  &priv->
 									  phandle->
 									  chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
 									  priv->
 									  phandle->
 									  channel_type,
@@ -1572,7 +1571,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 		/** these field add in kernel 3.2, but some kernel do have the pacth to
 				 * support it,like T3T and pxa978T 3.0.31 JB, these patch are
 				 * needed to support wpa_supplicant 2.x */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,31) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 31) || defined(COMPAT_WIRELESS)
 			if (pmevent->event_len > ETH_ALEN) {
 				/* set station info filled flag */
 				sinfo.filled |= STATION_INFO_ASSOC_REQ_IES;
@@ -1620,7 +1619,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 	case MLAN_EVENT_ID_UAP_FW_STA_DISCONNECT:
 #ifdef UAP_CFG80211
 		if (IS_UAP_CFG80211(cfg80211_wext)) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0) || defined(COMPAT_WIRELESS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) || defined(COMPAT_WIRELESS)
 			/* skip 2 bytes extra header will get the mac address */
 			if (priv->netdev && priv->wdev)
 				cfg80211_del_sta(priv->netdev,
@@ -1715,9 +1714,9 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 									    wiphy,
 									    freq),
 									   MFALSE);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0)
 				cfg80211_rx_mgmt(
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 							priv->wdev,
 #else
 							priv->netdev,
@@ -1815,20 +1814,7 @@ moal_recv_event(IN t_void * pmoal_handle, IN pmlan_event pmevent)
 				PRINTM(MMSG, "BSS START Complete!\n");
 			}
 		}
-	case MLAN_EVENT_ID_MLAN_WAIT:
-		PRINTM(MEVENT, "wlan: wait....\n");
-		priv->phandle->mlan_wait_q_woken = MFALSE;
-		/* Wait for mlan_init to complete */
-		wait_event_interruptible_timeout(priv->phandle->mlan_wait_q,
-						 priv->phandle->
-						 mlan_wait_q_woken,
-						 MLAN_WAIT_TIMEOUT);
-		break;
-	case MLAN_EVENT_ID_MLAN_WAKEUP:
-		priv->phandle->mlan_wait_q_woken = MTRUE;
-		wake_up_interruptible(&priv->phandle->mlan_wait_q);
-		PRINTM(MEVENT, "wlan: wakeup\n");
-		break;
+
 	default:
 		break;
 	}

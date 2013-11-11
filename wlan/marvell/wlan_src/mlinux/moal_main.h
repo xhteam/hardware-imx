@@ -518,9 +518,6 @@ out:
 /* IOCTL Timeout */
 #define MOAL_IOCTL_TIMEOUT                    (20 * HZ)
 
-/* MLAN WAIT Timeout */
-#define MLAN_WAIT_TIMEOUT                     (1 * HZ)
-
 /** Threshold value of number of times the Tx timeout happened */
 #define NUM_TX_TIMEOUT_THRESHOLD      5
 
@@ -1017,10 +1014,6 @@ struct _moal_handle {
 	t_u16 init_wait_q_woken;
 	/** Init wait queue */
 	wait_queue_head_t init_wait_q __ATTRIB_ALIGN__;
-	/** mlan wait queue token */
-	t_u16 mlan_wait_q_woken;
-	/** mlan wait queue */
-	wait_queue_head_t mlan_wait_q __ATTRIB_ALIGN__;
 #if defined(SDIO_SUSPEND_RESUME)
 	/** Device suspend flag */
 	BOOLEAN is_suspended;
@@ -1429,7 +1422,7 @@ woal_get_priv(moal_handle * handle, mlan_bss_role bss_role)
 		if (handle->priv[i]) {
 			if (bss_role == MLAN_BSS_ROLE_ANY ||
 			    GET_BSS_ROLE(handle->priv[i]) == bss_role)
-				return (handle->priv[i]);
+				return handle->priv[i];
 		}
 	}
 	return NULL;
@@ -1453,7 +1446,7 @@ woal_get_priv_bss_type(moal_handle * handle, mlan_bss_type bss_type)
 		if (handle->priv[i]) {
 			if (bss_type == MLAN_BSS_TYPE_ANY ||
 			    handle->priv[i]->bss_type == bss_type)
-				return (handle->priv[i]);
+				return handle->priv[i];
 		}
 	}
 	return NULL;

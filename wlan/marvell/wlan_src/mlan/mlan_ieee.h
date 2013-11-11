@@ -531,55 +531,57 @@ typedef MLAN_PACK_START enum _IEEEtypes_WMM_TSPEC_TS_TRAFFIC_TYPE_e {
 /** Data structure of WMM TSPEC information */
 typedef MLAN_PACK_START struct {
 #ifdef BIG_ENDIAN_SUPPORT
-	t_u8 Reserved17_23:7;	// ! Reserved
+	t_u8 Reserved17_23:7;	/* ! Reserved */
 	t_u8 Schedule:1;
 	IEEEtypes_WMM_TSPEC_TS_Info_AckPolicy_e AckPolicy:2;
-	t_u8 UserPri:3;		// ! 802.1d User Priority
-	IEEEtypes_WMM_TSPEC_TS_Info_PSB_e PowerSaveBehavior:1;	// !
-								// Legacy/Trigg
-	t_u8 Aggregation:1;	// ! Reserved
-	t_u8 AccessPolicy2:1;	// !
-	t_u8 AccessPolicy1:1;	// !
+	t_u8 UserPri:3;		/* ! 802.1d User Priority */
+	IEEEtypes_WMM_TSPEC_TS_Info_PSB_e PowerSaveBehavior:1;	/* !
+								   Legacy/Trigg
+								 */
+	t_u8 Aggregation:1;	/* ! Reserved */
+	t_u8 AccessPolicy2:1;	/* ! */
+	t_u8 AccessPolicy1:1;	/* ! */
 	IEEEtypes_WMM_TSPEC_TS_Info_Direction_e Direction:2;
-	t_u8 TID:4;		// ! Unique identifier
+	t_u8 TID:4;		/* ! Unique identifier */
 	IEEEtypes_WMM_TSPEC_TS_TRAFFIC_TYPE_e TrafficType:1;
 #else
 	IEEEtypes_WMM_TSPEC_TS_TRAFFIC_TYPE_e TrafficType:1;
-	t_u8 TID:4;		// ! Unique identifier
+	t_u8 TID:4;		/* ! Unique identifier */
 	IEEEtypes_WMM_TSPEC_TS_Info_Direction_e Direction:2;
-	t_u8 AccessPolicy1:1;	// !
-	t_u8 AccessPolicy2:1;	// !
-	t_u8 Aggregation:1;	// ! Reserved
-	IEEEtypes_WMM_TSPEC_TS_Info_PSB_e PowerSaveBehavior:1;	// !
-								// Legacy/Trigg
-	t_u8 UserPri:3;		// ! 802.1d User Priority
+	t_u8 AccessPolicy1:1;	/* ! */
+	t_u8 AccessPolicy2:1;	/* ! */
+	t_u8 Aggregation:1;	/* ! Reserved */
+	IEEEtypes_WMM_TSPEC_TS_Info_PSB_e PowerSaveBehavior:1;	/* !
+								   Legacy/Trigg
+								 */
+	t_u8 UserPri:3;		/* ! 802.1d User Priority */
 	IEEEtypes_WMM_TSPEC_TS_Info_AckPolicy_e AckPolicy:2;
 	t_u8 Schedule:1;
-	t_u8 Reserved17_23:7;	// ! Reserved
+	t_u8 Reserved17_23:7;	/* ! Reserved */
 #endif
 } MLAN_PACK_END IEEEtypes_WMM_TSPEC_TS_Info_t;
 
 /** Data structure of WMM TSPEC Nominal Size */
 typedef MLAN_PACK_START struct {
 #ifdef BIG_ENDIAN_SUPPORT
-	t_u16 Fixed:1;		// ! 1: Fixed size given in Size, 0: Var, size
-				// is nominal
-	t_u16 Size:15;		// ! Nominal size in octets
+	t_u16 Fixed:1;		/* ! 1: Fixed size given in Size, 0: Var, size
+				   is nominal */
+	t_u16 Size:15;		/* ! Nominal size in octets */
 #else
-	t_u16 Size:15;		// ! Nominal size in octets
-	t_u16 Fixed:1;		// ! 1: Fixed size given in Size, 0: Var, size
-				// is nominal
+	t_u16 Size:15;		/* ! Nominal size in octets */
+	t_u16 Fixed:1;		/* ! 1: Fixed size given in Size, 0: Var, size
+				   is nominal */
 #endif
 } MLAN_PACK_END IEEEtypes_WMM_TSPEC_NomMSDUSize_t;
 
 /** Data structure of WMM TSPEC SBWA */
 typedef MLAN_PACK_START struct {
 #ifdef BIG_ENDIAN_SUPPORT
-	t_u16 Whole:3;		// ! Whole portion
-	t_u16 Fractional:13;	// ! Fractional portion
+	t_u16 Whole:3;		/* ! Whole portion */
+	t_u16 Fractional:13;	/* ! Fractional portion */
 #else
-	t_u16 Fractional:13;	// ! Fractional portion
-	t_u16 Whole:3;		// ! Whole portion
+	t_u16 Fractional:13;	/* ! Fractional portion */
+	t_u16 Whole:3;		/* ! Whole portion */
 #endif
 } MLAN_PACK_END IEEEtypes_WMM_TSPEC_SBWA;
 

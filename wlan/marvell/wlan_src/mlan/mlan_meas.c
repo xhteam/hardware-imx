@@ -50,7 +50,7 @@ static const char *meas_type_str[WLAN_MEAS_NUM_TYPES] = {
 };
 
 /********************************************************
-                Local Functions
+			Local Functions
 ********************************************************/
 
 /**
@@ -314,7 +314,7 @@ wlan_meas_cmd_get_report(mlan_private * pmpriv, HostCmd_DS_COMMAND * pcmd_ptr)
 }
 
 /********************************************************
-                Global functions
+			Global functions
 ********************************************************/
 
 /**
