@@ -158,6 +158,7 @@ const struct string_to_enum out_channels_name_to_enum_table[] = {
 };
 
 
+static int vx_mic_enabled;
 /**
  * NOTE: when multiple mutexes have to be acquired, always respect the following order:
  *        hw device > in stream > out stream
@@ -268,7 +269,6 @@ static int set_route_by_array(struct mixer *mixer, struct route_setting *route,
         ctl = mixer_get_ctl_by_name(mixer, route[i].ctl_name);
         if (!ctl)
             return -EINVAL;
-
         if (route[i].strval) {
             if (enable)
                 mixer_ctl_set_enum_by_string(ctl, route[i].strval);
@@ -440,6 +440,8 @@ static void select_output_device(struct imx_audio_device *adev)
 
 			ALOGD("select mic for incall state headphone %d ,headset %d ,speaker %d, earpiece %d, \n", headphone_on, headset_on, speaker_on, earpiece_on);
 
+			vx_mic_enabled++;
+			
             if (headset_on){
                 for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
                     set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hp_mic_input, 0);
@@ -464,14 +466,17 @@ static void select_output_device(struct imx_audio_device *adev)
                     set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
         }
     }else {
-    	
-		ALOGD("disable all mic for vx\n");
-		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
-			set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hs_mic_input, 0);
-		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
-			set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
-		for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
-			set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hp_mic_input, 0);		
+
+		if(vx_mic_enabled){
+			ALOGD("disable all mic for vx\n");
+			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+				set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hs_mic_input, 0);
+			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+				set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_main_mic_input, 0);
+			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+				set_route_by_array(adev->mixer[i], adev->card_list[i]->vx_hp_mic_input, 0);		
+			vx_mic_enabled=0;
+		}
 	}
 }
 
