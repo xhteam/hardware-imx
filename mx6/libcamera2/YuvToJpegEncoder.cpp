@@ -27,6 +27,8 @@ YuvToJpegEncoder * YuvToJpegEncoder::create(int format) {
         return new Yuv420SpToJpegEncoder();
     } else if (format == HAL_PIXEL_FORMAT_YCbCr_422_I) {
         return new Yuv422IToJpegEncoder();
+    } else if (format == HAL_PIXEL_FORMAT_CbYCrY_422_I) {
+        return new uyvy422IToJpegEncoder();
     } else {
         FLOGE("YuvToJpegEncoder:create format:%d not support", format);
         return NULL;
@@ -296,6 +298,7 @@ void Yuv422IToJpegEncoder::configSamplingFactors(jpeg_compress_struct *cinfo) {
     cinfo->comp_info[2].v_samp_factor = 2;
 }
 
+// Ellie: this routine is for YUV420P resizing, not for yuv422i!
 int Yuv422IToJpegEncoder::yuvResize(uint8_t *srcBuf,
                                     int      srcWidth,
                                     int      srcHeight,
@@ -354,6 +357,146 @@ _resize_begin:
         }
 
         goto _resize_begin;
+    }
+
+    return 0;
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+uyvy422IToJpegEncoder::uyvy422IToJpegEncoder() :
+    YuvToJpegEncoder() {
+    fNumPlanes = 1;
+}
+
+void uyvy422IToJpegEncoder::compress(jpeg_compress_struct *cinfo,
+                                    uint8_t              *yuv) {
+    JSAMPROW   y[8];
+    JSAMPROW   cb[8];
+    JSAMPROW   cr[8];
+    JSAMPARRAY planes[3];
+
+    planes[0] = y;
+    planes[1] = cb;
+    planes[2] = cr;
+
+    int width      = cinfo->image_width;
+    int height     = cinfo->image_height;
+    int offset;
+    uint8_t *yRows = new uint8_t[8 * width];
+    uint8_t *uRows = new uint8_t[8 * (width >> 1)];
+    uint8_t *vRows = new uint8_t[8 * (width >> 1)];
+
+    uint8_t *yuvOffset = yuv;
+
+    // process 8 lines of Y and 8 lines of U/V each time.
+    while (cinfo->next_scanline < cinfo->image_height) {
+        deinterleave(yuvOffset,
+                     yRows,
+                     uRows,
+                     vRows,
+                     cinfo->next_scanline,
+                     width,
+                     height);
+
+        for (int i = 0; i < 8; i++) {
+            // y row
+            y[i] = yRows + i * width;
+
+            // construct u row and v row
+            // width is halved because of downsampling
+            offset = i * (width >> 1);
+            cb[i] = uRows + offset;
+            cr[i] = vRows + offset;
+        }
+
+        jpeg_write_raw_data(cinfo, planes, 8);
+    }
+    delete[] yRows;
+    delete[] uRows;
+    delete[] vRows;
+}
+
+void uyvy422IToJpegEncoder::deinterleave(uint8_t *yuv,
+                                        uint8_t *yRows,
+                                        uint8_t *uRows,
+                                        uint8_t *vRows,
+                                        int      rowIndex,
+                                        int      width,
+                                        int      height) {
+    int indexY;
+    int indexU;
+    uint8_t *yuvSeg;
+    int i,row;
+    for (row = 0; row < 8; ++row) 
+    {
+        yuvSeg = yuv + (rowIndex + row) * width * 2;
+		indexY = row * width;
+		indexU = row * (width >> 1);
+        for (i = 0; i < width; i+=2) 
+		{
+            yRows[indexY]     = yuvSeg[1];
+            yRows[indexY + 1] = yuvSeg[3];
+            uRows[indexU]     = yuvSeg[0];
+            vRows[indexU]     = yuvSeg[2];
+            yuvSeg +=4;
+			indexY +=2;
+			indexU +=1;
+        }
+    }
+}
+
+void uyvy422IToJpegEncoder::configSamplingFactors(jpeg_compress_struct *cinfo) {
+    // cb and cr are horizontally downsampled
+    cinfo->comp_info[0].h_samp_factor = 2;
+    cinfo->comp_info[0].v_samp_factor = 1;
+    cinfo->comp_info[1].h_samp_factor = 1;
+    cinfo->comp_info[1].v_samp_factor = 1;
+    cinfo->comp_info[2].h_samp_factor = 1;
+    cinfo->comp_info[2].v_samp_factor = 1;
+}
+
+int uyvy422IToJpegEncoder::yuvResize(uint8_t *srcBuf,
+                                    int      srcWidth,
+                                    int      srcHeight,
+                                    uint8_t *dstBuf,
+                                    int      dstWidth,
+                                    int      dstHeight)
+{
+    int i, j;
+    int h_offset;
+    int v_offset;
+    unsigned char *sptr,*dptr;
+    int h_scale_ratio;
+    int v_scale_ratio;
+
+    if (!dstWidth) return -1;
+
+    if (!dstHeight) return -1;
+
+    if (srcWidth&1) return -1;
+
+    if (dstWidth&1) return -1;
+
+    h_scale_ratio = srcWidth / dstWidth;
+    if (!h_scale_ratio) return -1;
+
+    v_scale_ratio = srcHeight / dstHeight;
+    if (!v_scale_ratio) return -1;
+
+    h_offset = ((srcWidth - dstWidth * h_scale_ratio) >>1)&(~1);
+    v_offset = (srcHeight - dstHeight * v_scale_ratio) >>1;
+
+    for (i = 0; i < dstHeight * v_scale_ratio; i += v_scale_ratio)
+    {
+        sptr=srcBuf + (((i+v_offset) * srcWidth + h_offset) * 2);
+        dptr=dstBuf + (((i / v_scale_ratio) * dstWidth) * 2);
+        for (j = 0; j < dstWidth; )
+        {
+            *((unsigned int *)dptr) = *((unsigned int *)sptr);
+			j+=2;
+			sptr+=(4*h_scale_ratio);
+			dptr+=4;
+        }
     }
 
     return 0;

@@ -161,6 +161,8 @@ protected:
     PixelFormat mPicturePixelFormat;
     PixelFormat mPreviewPixelFormat;
     sp<MetadaManager> mMetadaManager;
+
+    //int dumpcnt;
 };
 
 #endif // ifndef _DEVICE_ADAPTER_H_

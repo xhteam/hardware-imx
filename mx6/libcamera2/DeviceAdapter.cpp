@@ -20,6 +20,7 @@
 #include "Ov5642Csi.h"
 #include "Ov5640Csi.h"
 #include "TVINDevice.h"
+#include "mt9p111Csi.h"
 
 sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
 {
@@ -44,9 +45,13 @@ sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
         FLOGI("DeviceAdapter: Create adv7180 device");
         devAdapter = new TVINDevice();
     }
+    else if (strstr(info.name, MT9P111_SENSOR_NAME)) {//add by allenyao
+        FLOGI("DeviceAdapter: Create mt9p111_camera device");
+        devAdapter = new mt9p111Csi();
+    }
     else {
         devAdapter = new OvDevice();
-        FLOGI("sensor %s does not support well now!", info.name);
+        FLOGE("sensor %s does not support well now!", info.name);
     }
 
     return devAdapter;
@@ -112,6 +117,8 @@ void DeviceAdapter::setPreviewPixelFormat()
 
     mPreviewPixelFormat = getMatchFormat(vpuFormats, MAX_VPU_SUPPORT_FORMAT,
                           mAvailableFormats, MAX_SENSOR_FORMAT);
+	if(mPreviewPixelFormat==0) /* Ellie Cao:no matching format found, use input format */
+		mPreviewPixelFormat=mAvailableFormats[0];
 }
 
 void DeviceAdapter::setPicturePixelFormat()
@@ -127,6 +134,8 @@ void DeviceAdapter::setPicturePixelFormat()
     }
     mPicturePixelFormat = getMatchFormat(picFormats, MAX_PICTURE_SUPPORT_FORMAT,
                             mAvailableFormats, MAX_SENSOR_FORMAT);
+	if(mPicturePixelFormat==0) /* Ellie Cao:no matching format found, use input format */
+		mPicturePixelFormat=mAvailableFormats[0];
 }
 
 status_t DeviceAdapter::initialize(const CameraInfo& info)
@@ -180,7 +189,7 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
         FLOGE("v4l2 capability does not support capture");
         return BAD_VALUE;
     }
-
+	//dumpcnt=0;
     initSensorInfo(info);
     setPreviewPixelFormat();
     setPicturePixelFormat();
@@ -542,7 +551,7 @@ CameraFrame * DeviceAdapter::acquireCameraFrame()
     return mDeviceBufs[index];
 }
 
-// #define FSL_CAMERAHAL_DUMP
+//#define FSL_CAMERAHAL_DUMP
 static void bufferDump(CameraFrame *frame)
 {
 #ifdef FSL_CAMERAHAL_DUMP
@@ -556,13 +565,13 @@ static void bufferDump(CameraFrame *frame)
         vflg = 1;
     if (vflg) {
         FILE *pf = NULL;
-        pf = fopen("/sdcard/camera_tst.data", "wb");
+        pf = fopen("/data/test/camera_tst.data", "wb");
         if (pf == NULL) {
-            FLOGI("open /sdcard/camera_tst.data failed");
+            FLOGI("open /data/test/camera_tst.data failed");
         }
         else {
             FLOGI("-----write-----");
-            fwrite(frame->mVirtAddr, frame->mSize, 1, pf);
+            fwrite(frame->mVirtAddr, /*frame->mSize*/ frame->mWidth*frame->mHeight*2, 1, pf);
             fclose(pf);
         }
         vflg = 0;
@@ -600,13 +609,18 @@ int DeviceAdapter::deviceThread()
         dispatchEvent(cameraEvt);
 
         frame->mFrameType = CameraFrame::IMAGE_FRAME;
+        //bufferDump(frame);
     }
     else {
         frame->mFrameType = CameraFrame::PREVIEW_FRAME;
+        //if(dumpcnt++==100)
+        //	bufferDump(frame);
     }
 
     dispatchCameraFrame(frame);
-    if (mImageCapture || !mPreviewing) {
+    // Ellie Cao changed so that first capture image can be skipped
+    //if (mImageCapture || !mPreviewing) {
+    if (!mPreviewing && !mImageCapture){
         FLOGI("device thread exit...");
         return ALREADY_EXISTS;
     }

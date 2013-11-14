@@ -129,6 +129,30 @@ private:
                           int      dstHeight);
 };
 
+class uyvy422IToJpegEncoder : public YuvToJpegEncoder {
+public:
+    uyvy422IToJpegEncoder();
+    virtual ~uyvy422IToJpegEncoder() {}
+
+private:
+    void configSamplingFactors(jpeg_compress_struct *cinfo);
+    void compress(jpeg_compress_struct *cinfo,
+                  uint8_t              *yuv);
+    void deinterleave(uint8_t *yuv,
+                      uint8_t *yRows,
+                      uint8_t *uRows,
+                      uint8_t *vRows,
+                      int      rowIndex,
+                      int      width,
+                      int      height);
+    virtual int yuvResize(uint8_t *srcBuf,
+                          int      srcWidth,
+                          int      srcHeight,
+                          uint8_t *dstBuf,
+                          int      dstWidth,
+                          int      dstHeight);
+};
+
 struct jpegBuilder_destination_mgr : jpeg_destination_mgr {
     jpegBuilder_destination_mgr(uint8_t *input,
                                 int size);

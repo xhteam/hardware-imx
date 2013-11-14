@@ -64,6 +64,7 @@ int StreamAdapter::start()
 {
     FLOG_TRACE("StreamAdapter %s running", __FUNCTION__);
 
+    skip=0;
     mTime1 = mTime2 = 0;
     mTotalFrames = mFps = 0;
     mShowFps = false;
@@ -230,9 +231,16 @@ void StreamAdapter::handleCameraFrame(CameraFrame *frame)
     if (!mReceiveFrame) {
         return;
     }
+    else if (mStreamId == STREAM_ID_PREVIEW) {
+        //Ellie Cao:skip first preview frame.
+        if(skip++<1)
+            return;
+    }
     else if (mStreamId == STREAM_ID_JPEG) {
-        //captureStream should reveive one frame every time.
-        mReceiveFrame = false;
+        //Ellie Cao:skip first capture frames.
+        if(skip++<1)
+            return;
+        mReceiveFrame=false;
     }
     //the frame processed in StreamThread.
     frame->addReference();
