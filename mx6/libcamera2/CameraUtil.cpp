@@ -35,6 +35,10 @@ int convertPixelFormatToV4L2Format(PixelFormat format)
             nFormat = v4l2_fourcc('Y', 'U', 'Y', 'V');
             break;
 
+        case HAL_PIXEL_FORMAT_CbYCrY_422_I:
+            nFormat = v4l2_fourcc('U', 'Y', 'V', 'Y');
+            break;
+
         default:
             FLOGE("Error: format:0x%x not supported!", format);
             break;
@@ -58,6 +62,10 @@ PixelFormat convertV4L2FormatToPixelFormat(unsigned int format)
 
         case v4l2_fourcc('Y', 'U', 'Y', 'V'):
             nFormat = HAL_PIXEL_FORMAT_YCbCr_422_I;
+            break;
+
+        case v4l2_fourcc('U', 'Y', 'V', 'Y'):
+            nFormat = HAL_PIXEL_FORMAT_CbYCrY_422_I;
             break;
 
         default:
@@ -103,6 +111,9 @@ int convertStringToV4L2Format(const char *pFormat)
     }
     else if (!strcmp(pFormat, "yuv422i-yuyv")) {
         return v4l2_fourcc('Y', 'U', 'Y', 'V');
+    }
+    else if (!strcmp(pFormat, "yuv422i-uyvy")) {
+        return v4l2_fourcc('U', 'Y', 'V', 'Y');
     }
     else {
         FLOGE("format %s is not supported", pFormat);

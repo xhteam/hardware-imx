@@ -38,6 +38,10 @@ status_t OvDevice::changeSensorFormats(int *src, int len)
                 mAvailableFormats[k++] = HAL_PIXEL_FORMAT_YCbCr_422_I;
                 break;
 
+            case v4l2_fourcc('U', 'Y', 'V', 'Y'):
+                mAvailableFormats[k++] = HAL_PIXEL_FORMAT_CbYCrY_422_I;
+                break;
+
             case v4l2_fourcc('B', 'L', 'O', 'B'):
                 mAvailableFormats[k++] = HAL_PIXEL_FORMAT_BLOB;
                 break;

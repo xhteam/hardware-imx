@@ -56,6 +56,7 @@ int PhysMemAdapter::allocateBuffers(int width,int height,
             break;
 
         case HAL_PIXEL_FORMAT_YCbCr_422_I:
+        case HAL_PIXEL_FORMAT_CbYCrY_422_I:
             size = width * height * 2;
             break;
 

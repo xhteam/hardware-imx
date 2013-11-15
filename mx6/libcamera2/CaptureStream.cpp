@@ -269,6 +269,7 @@ status_t CaptureStream::makeJpegImage(StreamBuffer *dstBuf, StreamBuffer *srcBuf
                 break;
 
             case v4l2_fourcc('Y', 'U', 'Y', 'V'):
+            case v4l2_fourcc('U', 'Y', 'V', 'Y'):
                 thumbSize = thumbWidth * thumbHeight * 2;
                 break;
 

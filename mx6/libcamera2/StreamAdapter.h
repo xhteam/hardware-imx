@@ -123,6 +123,7 @@ protected:
     mutable sem_t mRespondSem;
 
     bool mReceiveFrame;
+    int skip; // Ellie Cao added
     // for debug.
     bool mShowFps;
     nsecs_t mTime1;

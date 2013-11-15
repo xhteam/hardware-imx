@@ -75,6 +75,8 @@ using namespace android;
 #define OV5640CSI_SENSOR_NAME "ov5640_camera"
 #define ADV7180_TVIN_NAME "adv7180_decoder"
 #define V4LSTREAM_WAKE_LOCK "V4LCapture"
+#define MT9P111_SENSOR_NAME "mt9p111_camera" /*add by allenyao*/
+
 
 #define MAX_PREVIEW_BUFFER      6
 #define MAX_CAPTURE_BUFFER      3
