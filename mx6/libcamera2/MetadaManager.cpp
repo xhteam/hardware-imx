@@ -645,6 +645,45 @@ status_t MetadaManager::getFocalLength(float &focalLength)
     return NO_ERROR;
 }
 
+// Ellie added
+status_t MetadaManager::getFlashMode(uint8_t *mode)
+{
+	camera_metadata_entry_t streams;
+	uint8_t fl_mode,ae_mode;
+
+	int res = find_camera_metadata_entry(mCurrentRequest,
+				ANDROID_FLASH_MODE, &streams);
+	if (res != NO_ERROR) {
+		ALOGE("%s: error reading flash mode", __FUNCTION__);
+		return BAD_VALUE;
+	}
+	fl_mode = streams.data.u8[0];
+
+	if(fl_mode == ANDROID_FLASH_TORCH)
+	{
+		*mode=ANDROID_FLASH_TORCH;
+		return NO_ERROR;
+	}
+
+	res = find_camera_metadata_entry(mCurrentRequest,
+	ANDROID_CONTROL_AE_MODE, &streams);
+	if (res != NO_ERROR) {
+		ALOGE("%s: error reading AE mode", __FUNCTION__);
+		return BAD_VALUE;
+	}
+	ae_mode = streams.data.u8[0];
+
+	if(ae_mode == ANDROID_CONTROL_AE_ON_AUTO_FLASH || ae_mode == ANDROID_CONTROL_AE_ON_ALWAYS_FLASH)
+	{
+		*mode=ANDROID_FLASH_SINGLE;
+	}
+	else
+	{
+		*mode=ANDROID_FLASH_OFF;
+	}
+	return NO_ERROR;
+}
+
 status_t MetadaManager::getRequestStreams(camera_metadata_entry_t *reqStreams)
 {
     if (reqStreams == NULL) {
@@ -669,7 +708,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
             tag, data, count) ) != OK ) return ret
 
     // android.lens
-    static float minFocusDistance = 0;
+    static float minFocusDistance = 1; /*Ellie changed to support autofocus*/
     ADD_OR_SIZE(ANDROID_LENS_MINIMUM_FOCUS_DISTANCE,
             &minFocusDistance, 1);
     ADD_OR_SIZE(ANDROID_LENS_HYPERFOCAL_DISTANCE,
@@ -751,7 +790,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     //TODO: sensor color calibration fields
 
     // android.flash
-    uint8_t flashAvailable = 0;
+    uint8_t flashAvailable = 0; /*Ellie: change to 1 to enable flash light*/
     ADD_OR_SIZE(ANDROID_FLASH_AVAILABLE, &flashAvailable, 1);
 
     static const int64_t flashChargeDuration = 0;
@@ -863,7 +902,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     ADD_OR_SIZE(ANDROID_CONTROL_AVAILABLE_EFFECTS,
             availableEffects, sizeof(availableEffects));
 
-    int32_t max3aRegions = 0;
+    int32_t max3aRegions = 1;/*Ellie changed to support autofocus*/
     ADD_OR_SIZE(ANDROID_CONTROL_MAX_REGIONS,
             &max3aRegions, 1);
 
@@ -903,8 +942,8 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     ADD_OR_SIZE(ANDROID_CONTROL_AWB_AVAILABLE_MODES,
             availableAwbModes, sizeof(availableAwbModes));
 
-    static const uint8_t availableAfModes[] = {
-            ANDROID_CONTROL_AF_OFF
+    static const uint8_t availableAfModes[] = {/*Ellie changed to support autofocus*/
+            ANDROID_CONTROL_AF_AUTO
     };
     ADD_OR_SIZE(ANDROID_CONTROL_AF_AVAILABLE_MODES,
                 availableAfModes, sizeof(availableAfModes));

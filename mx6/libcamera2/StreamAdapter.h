@@ -62,7 +62,7 @@ public:
 
     //CameraFrameListener
     void handleCameraFrame(CameraFrame *frame);
-    void setErrorListener(CameraErrorListener *listener);
+    void setListener(CameraListener *listener);
     void showFps();
     void convertNV12toYV12(StreamBuffer* dst, StreamBuffer* src);
     void convertNV12toNV21(StreamBuffer* dst, StreamBuffer* src);
@@ -118,7 +118,7 @@ protected:
     sp<StreamThread> mStreamThread;
     CMessageQueue mThreadQueue;
     int mStreamState;
-    CameraErrorListener *mErrorListener;
+    CameraListener *mListener;
 
     sp<MetadaManager> mMetadaManager;
     mutable sem_t mRespondSem;

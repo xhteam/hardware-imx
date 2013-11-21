@@ -220,12 +220,27 @@ int release_reprocess_stream(
     return INVALID_OPERATION;
 }
 
-int trigger_action(const struct camera2_device *,
+int trigger_action(const struct camera2_device *device,
         uint32_t trigger_id,
         int32_t ext1,
         int32_t ext2)
 {
-    return INVALID_OPERATION;
+    int ret = INVALID_OPERATION;
+    CameraHal *camHal = fsl_get_camerahal(device);
+
+    if (camHal != NULL) 
+	{
+		ALOGI("%s:%d", __FUNCTION__,trigger_id);
+		if(trigger_id==CAMERA2_TRIGGER_AUTOFOCUS)
+	        ret = camHal->autoFocus(ext1);
+		else if(trigger_id==CAMERA2_TRIGGER_CANCEL_AUTOFOCUS)
+			ret = camHal->cancelAutoFocus();
+		else
+			ret = camHal->precaptureMetering(ext1);
+		return ret;
+    }
+	else
+		return INVALID_OPERATION;
 }
 
 int set_notify_callback(const struct camera2_device *device,

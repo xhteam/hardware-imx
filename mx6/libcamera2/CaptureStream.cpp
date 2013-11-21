@@ -100,8 +100,8 @@ fail:
     mPhysMemAdapter->freeBuffers();
     FLOGE("Error occurred, performing cleanup");
 
-    if (NULL != mErrorListener) {
-        mErrorListener->handleError(errCode);
+    if (NULL != mListener) {
+        mListener->handleError(errCode);
     }
 
     return BAD_VALUE;

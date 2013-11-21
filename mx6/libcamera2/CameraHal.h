@@ -26,13 +26,15 @@ using namespace android;
 
 class PhysMemAdapter;
 
-class CameraHal : public CameraErrorListener
+class CameraHal : public CameraListener
 {
 public:
     CameraHal(int cameraId);
     ~CameraHal();
     status_t initialize(CameraInfo& info);
     void handleError(int err);
+    void handleFocus(int newstate);
+    void handlePrecapture(int newstate);
 
     //camera2 interface.
     int set_request_queue_src_ops(
@@ -70,6 +72,9 @@ public:
 
     void     LockWakeLock();
     void     UnLockWakeLock();
+    int autoFocus(int32_t triggerID);
+    int cancelAutoFocus();
+    int precaptureMetering(int32_t triggerID);
 
 private:
     bool mPowerLock;
@@ -82,6 +87,7 @@ private:
     const camera2_frame_queue_dst_ops *mFrameQueue;
     camera2_notify_callback mNotifyCb;
     void *mNotifyUserPtr;
+    int trigger_id;
 };
 
 #endif // ifndef _CAMERA_HAL_H

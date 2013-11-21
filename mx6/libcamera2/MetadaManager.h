@@ -57,6 +57,7 @@ public:
     status_t getGpsTimeStamp(int64_t &timeStamp);
     status_t getGpsProcessingMethod(uint8_t* src, int count);
     status_t getFocalLength(float &focalLength);
+    status_t getFlashMode(uint8_t *mode);
     status_t getJpegRotation(int32_t &jpegRotation);
     status_t getJpegQuality(int32_t &quality);
     status_t getJpegThumbQuality(int32_t &thumb);

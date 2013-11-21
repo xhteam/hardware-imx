@@ -55,9 +55,9 @@ void StreamAdapter::setMetadaManager(sp<MetadaManager>& metaManager)
     mMetadaManager = metaManager;
 }
 
-void StreamAdapter::setErrorListener(CameraErrorListener *listener)
+void StreamAdapter::setListener(CameraListener *listener)
 {
-    mErrorListener = listener;
+    mListener = listener;
 }
 
 int StreamAdapter::start()
@@ -162,7 +162,7 @@ bool StreamAdapter::handleStream()
             frame->release();
             cancelBuffer(frame);
             if (ret != 0) {
-                mErrorListener->handleError(ret);
+                mListener->handleError(ret);
                 if (ret <= CAMERA2_MSG_ERROR_DEVICE) {
                     FLOGI("stream thread dead because of error...");
                     mStreamState = STREAM_EXITED;

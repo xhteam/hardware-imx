@@ -37,7 +37,7 @@ public:
     virtual int      getFrameSize();
     virtual int      getFrameCount();
 
-    void             setErrorListener(CameraErrorListener *listener);
+    void             setListener(CameraListener *listener);
     void             setCameraBufferProvide(CameraBufferProvider *bufferProvider);
     virtual status_t initialize(const CameraInfo& info);
     virtual status_t setDeviceConfig(int         width,
@@ -62,6 +62,7 @@ public:
 
     status_t         autoFocus();
     status_t         cancelAutoFocus();
+    status_t         precaptureMetering();
 
     virtual status_t startPreview();
     virtual status_t stopPreview();
@@ -138,10 +139,11 @@ protected:
 private:
     int          deviceThread();
     int          autoFocusThread();
+    status_t setFlash(int on);
 
 protected:
     CameraBufferProvider *mBufferProvider;
-    CameraErrorListener  *mErrorListener;
+    CameraListener  *mListener;
     int mBufferCount;
     int mBufferSize;
     CameraFrame* mDeviceBufs[MAX_PREVIEW_BUFFER];
@@ -151,6 +153,7 @@ protected:
     CameraParameters mParams;
     bool mPreviewing;
     bool mImageCapture;
+    bool mFlashOn; // Ellie added
     sp<DeviceThread> mDeviceThread;
     sp<AutoFocusThread> mAutoFocusThread;
 
@@ -162,6 +165,11 @@ protected:
     PixelFormat mPreviewPixelFormat;
     sp<MetadaManager> mMetadaManager;
 
+	// Ellie added
+    mutable Mutex mFocusLock;
+    nsecs_t mFocusStartTime;
+    bool mAutoFocusing;
+    bool mSingleFlashing;
     //int dumpcnt;
 };
 
