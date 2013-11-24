@@ -914,7 +914,14 @@ static int do_output_standby(struct imx_stream_out *out)
         /* if in call, don't turn off the output stage. This will
         be done when the call is ended */
         if (adev->mode != AUDIO_MODE_IN_CALL) {
-            /* FIXME: only works if only one output can be active at a time */
+			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+				set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, 0);
+			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+				set_route_by_array(adev->mixer[i], adev->card_list[i]->hs_output, 0);
+			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+				set_route_by_array(adev->mixer[i], adev->card_list[i]->speaker_output, 0);
+			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
+				set_route_by_array(adev->mixer[i], adev->card_list[i]->earpiece_output,0);
         }
 
         /* stop writing to echo reference */
