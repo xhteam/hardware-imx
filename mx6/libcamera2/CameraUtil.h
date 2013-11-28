@@ -48,6 +48,7 @@
 #include <system/camera.h>
 #include "gralloc_priv.h"
 #include <linux/videodev2.h>
+#include <linux/mxc_v4l2.h>
 #include <hardware/camera2.h>
 #include "MetadaManager.h"
 
@@ -236,10 +237,12 @@ enum CAMERA_ERROR {
     ERROR_TINY  = 2,
 };
 
-class CameraErrorListener {
+class CameraListener {
 public:
     virtual void handleError(int err) = 0;
-    virtual ~CameraErrorListener() {}
+    virtual void handleFocus(int newstate) = 0;
+    virtual void handlePrecapture(int newstate) = 0;
+    virtual ~CameraListener() {}
 };
 
 class CameraBufferListener {

@@ -41,10 +41,39 @@ void CameraHal::handleError(int err)
         case CAMERA2_MSG_ERROR_STREAM:
         default:
             FLOGE("%s handle error:%d", __FUNCTION__, err);
-            mNotifyCb(CAMERA_MSG_ERROR, err, 0, 0, mNotifyUserPtr);
+            mNotifyCb(CAMERA2_MSG_ERROR, err, 0, 0, mNotifyUserPtr);
 
             break;
     }
+}
+
+// Ellie added
+void CameraHal::handleFocus(int newstate)
+{
+	if(newstate==ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED) 
+	{
+		FLOGI("%s focused", __FUNCTION__);
+		mNotifyCb(CAMERA2_MSG_AUTOFOCUS, ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED, trigger_id, 0, mNotifyUserPtr);
+	}
+	else if(newstate==ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED)	
+	{
+		FLOGI("%s focus failed", __FUNCTION__);
+		mNotifyCb(CAMERA2_MSG_AUTOFOCUS, ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED, trigger_id, 0, mNotifyUserPtr);
+	}
+}
+
+void CameraHal::handlePrecapture(int newstate)
+{
+	if(newstate==ANDROID_CONTROL_AE_STATE_PRECAPTURE) 
+	{
+		FLOGI("%s start", __FUNCTION__);
+		mNotifyCb(CAMERA2_MSG_AUTOEXPOSURE, ANDROID_CONTROL_AE_STATE_PRECAPTURE, trigger_id, 0, mNotifyUserPtr);
+	}
+	else if(newstate==ANDROID_CONTROL_AE_STATE_INACTIVE)	
+	{
+		FLOGI("%s end", __FUNCTION__);
+		mNotifyCb(CAMERA2_MSG_AUTOEXPOSURE, ANDROID_CONTROL_AE_STATE_INACTIVE, trigger_id, 0, mNotifyUserPtr);
+	}
 }
 
 int CameraHal::notify_request_queue_not_empty()
@@ -150,7 +179,7 @@ status_t CameraHal::initialize(CameraInfo& info)
         return ret;
     }
 
-    mRequestManager->setErrorListener(this);
+    mRequestManager->setListener(this);
 
     return ret;
 }
@@ -179,5 +208,23 @@ void CameraHal::UnLockWakeLock()
 status_t CameraHal::dump(int fd) const
 {
     return NO_ERROR;
+}
+
+// Ellie added
+int CameraHal::autoFocus(int32_t triggerID)
+{
+    trigger_id=triggerID;
+    return mRequestManager->autoFocus();
+}
+
+int CameraHal::cancelAutoFocus()
+{
+    return mRequestManager->cancelAutoFocus();
+}
+
+int CameraHal::precaptureMetering(int32_t triggerID)
+{
+    trigger_id=triggerID;
+    return mRequestManager->precaptureMetering();
 }
 

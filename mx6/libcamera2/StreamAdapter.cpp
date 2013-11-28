@@ -55,9 +55,9 @@ void StreamAdapter::setMetadaManager(sp<MetadaManager>& metaManager)
     mMetadaManager = metaManager;
 }
 
-void StreamAdapter::setErrorListener(CameraErrorListener *listener)
+void StreamAdapter::setListener(CameraListener *listener)
 {
-    mErrorListener = listener;
+    mListener = listener;
 }
 
 int StreamAdapter::start()
@@ -162,7 +162,7 @@ bool StreamAdapter::handleStream()
             frame->release();
             cancelBuffer(frame);
             if (ret != 0) {
-                mErrorListener->handleError(ret);
+                mListener->handleError(ret);
                 if (ret <= CAMERA2_MSG_ERROR_DEVICE) {
                     FLOGI("stream thread dead because of error...");
                     mStreamState = STREAM_EXITED;
@@ -325,6 +325,66 @@ void StreamAdapter::convertNV12toNV21(StreamBuffer* dst, StreamBuffer* src)
     }
 }
 
+void StreamAdapter::convertUYVYtoNV12(StreamBuffer* dst, StreamBuffer* src)
+{
+	int width,height;
+	uint8_t *srcIn, *dstOut;
+	uint8_t *UVout;
+	int i,j;
+	uint8_t Cb,Cr;
+
+	width = src->mWidth;
+	height = src->mHeight;
+
+	if((width&1)||(height&1))
+	{
+		FLOGE("%s invalid width %d height %d", __FUNCTION__,width,height);
+		return;
+	}
+
+	srcIn = (uint8_t *)src->mVirtAddr;
+	dstOut = (uint8_t *)dst->mVirtAddr;
+	UVout = (uint8_t *)(dstOut + width*height);
+	width<<=1;
+
+	for (i = 0; i < height; i++ ) 
+	{
+		if(i&1)
+		{
+			for(j = 0; j < width; j += 4)
+			{
+				UVout++;
+				srcIn++;
+				*dstOut=*srcIn;
+				dstOut++;
+				srcIn++;
+				*UVout=*srcIn;
+				UVout++;
+				srcIn++;
+				*dstOut=*srcIn;
+				dstOut++;
+				srcIn++;
+			}
+		}
+		else
+		{
+			for(j = 0; j < width; j += 4)
+			{
+				*UVout=*srcIn;
+				UVout+=2;
+				srcIn++;
+				*dstOut=*srcIn;
+				dstOut++;
+				srcIn+=2;
+				*dstOut=*srcIn;
+				dstOut++;
+				srcIn++;
+			}
+			UVout-=src->mWidth;
+		}
+    }
+}
+
 int StreamAdapter::processFrame(CameraFrame *frame)
 {
     status_t ret = NO_ERROR;
@@ -349,6 +409,10 @@ int StreamAdapter::processFrame(CameraFrame *frame)
     else if (mStreamId == STREAM_ID_PRVCB && buffer.mWidth <= 1280 &&
             buffer.mFormat == HAL_PIXEL_FORMAT_YCbCr_420_SP) {
         convertNV12toNV21(&buffer, frame);
+    }
+    else if (mStreamId == STREAM_ID_RECORD && buffer.mWidth <= 1280 &&
+            buffer.mFormat == HAL_PIXEL_FORMAT_CbYCrY_422_I) {
+        convertUYVYtoNV12(&buffer, frame);
     }
     else if (g2dHandle != NULL) {
         struct g2d_buf s_buf, d_buf;
