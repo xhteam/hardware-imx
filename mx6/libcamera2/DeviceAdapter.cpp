@@ -198,10 +198,11 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
     mVideoInfo->isStreamOn = false;
     mImageCapture          = false;
 
-    // Ellie added for flash and autofocus
+    // Ellie added for flash, autofocus and exposure compensation
     mFlashOn = false;
     mAutoFocusing = false;
     mSingleFlashing = false;
+    nExpComp = 0;
     return NO_ERROR;
 }
 
@@ -622,6 +623,32 @@ status_t DeviceAdapter::setFlash(int on)
 	return NO_ERROR;
 }
 
+// Ellie added
+status_t DeviceAdapter::updatePQParam()
+{
+    int32_t exp_comp;
+    int ret;
+    struct v4l2_control ctrl;
+
+    ret = mMetadaManager->getExpComp(&exp_comp);
+    if (ret != NO_ERROR) {
+        FLOGE("%s: getExpComp failed", __FUNCTION__);
+        return BAD_VALUE;
+    }
+    if(nExpComp==exp_comp)
+        return NO_ERROR;
+
+    ctrl.id = V4L2_CID_EXPOSURE;
+    ctrl.value = exp_comp;
+    ret = ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl);
+    if (ret < 0) {
+        FLOGE("updatePQParam: VIDIOC_S_CTRL Failed: %s", strerror(errno));
+        return ret;
+    }
+    nExpComp = exp_comp;
+    return NO_ERROR;
+}
+
 int DeviceAdapter::deviceThread()
 {
     CameraFrame *frame = NULL;
@@ -662,6 +689,8 @@ int DeviceAdapter::deviceThread()
             }
         }
     }
+
+    updatePQParam();
 
     frame = acquireCameraFrame();
     if (!frame) {

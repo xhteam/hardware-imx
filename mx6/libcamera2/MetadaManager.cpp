@@ -510,6 +510,7 @@ status_t MetadaManager::getJpegRotation(int32_t &jpegRotation)
     }
 
     jpegRotation = streams.data.i32[0];
+    ALOGI("getJpegRotation %d",jpegRotation);
     return NO_ERROR;
 }
 
@@ -681,6 +682,22 @@ status_t MetadaManager::getFlashMode(uint8_t *mode)
 	{
 		*mode=ANDROID_FLASH_OFF;
 	}
+	return NO_ERROR;
+}
+
+// Ellie added
+status_t MetadaManager::getExpComp(int32_t *exp_comp)
+{
+	camera_metadata_entry_t streams;
+
+	int res = find_camera_metadata_entry(mCurrentRequest,
+				ANDROID_CONTROL_AE_EXP_COMPENSATION, &streams);
+	if (res != NO_ERROR) {
+		ALOGE("%s: error reading AE exposure compensation", __FUNCTION__);
+		return BAD_VALUE;
+	}
+	*exp_comp = streams.data.i32[0];
+
 	return NO_ERROR;
 }
 
@@ -919,7 +936,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     ADD_OR_SIZE(ANDROID_CONTROL_AE_EXP_COMPENSATION_STEP,
             &exposureCompensationStep, 1);
 
-    int32_t exposureCompensationRange[] = {-3, 3};
+    int32_t exposureCompensationRange[] = {-2, 3};
     ADD_OR_SIZE(ANDROID_CONTROL_AE_EXP_COMPENSATION_RANGE,
             exposureCompensationRange,
             sizeof(exposureCompensationRange)/sizeof(int32_t));

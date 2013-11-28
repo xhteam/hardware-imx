@@ -140,6 +140,7 @@ private:
     int          deviceThread();
     int          autoFocusThread();
     status_t setFlash(int on);
+    status_t updatePQParam();
 
 protected:
     CameraBufferProvider *mBufferProvider;
@@ -154,6 +155,7 @@ protected:
     bool mPreviewing;
     bool mImageCapture;
     bool mFlashOn; // Ellie added
+    int nExpComp; // Ellie added
     sp<DeviceThread> mDeviceThread;
     sp<AutoFocusThread> mAutoFocusThread;
 
