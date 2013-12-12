@@ -117,8 +117,10 @@ void DeviceAdapter::setPreviewPixelFormat()
 
     mPreviewPixelFormat = getMatchFormat(vpuFormats, MAX_VPU_SUPPORT_FORMAT,
                           mAvailableFormats, MAX_SENSOR_FORMAT);
-	if(mPreviewPixelFormat==0) /* Ellie Cao:no matching format found, use input format */
+	if(mPreviewPixelFormat==0){ /* Ellie Cao:no matching format found, use input format */
+		FLOGW("no matching preview format found,use default");
 		mPreviewPixelFormat=mAvailableFormats[0];
+	}
 }
 
 void DeviceAdapter::setPicturePixelFormat()
@@ -134,8 +136,10 @@ void DeviceAdapter::setPicturePixelFormat()
     }
     mPicturePixelFormat = getMatchFormat(picFormats, MAX_PICTURE_SUPPORT_FORMAT,
                             mAvailableFormats, MAX_SENSOR_FORMAT);
-	if(mPicturePixelFormat==0) /* Ellie Cao:no matching format found, use input format */
+	if(mPicturePixelFormat==0){ /* Ellie Cao:no matching format found, use input format */
+		FLOGW("no matching picture format found,use default");		
 		mPicturePixelFormat=mAvailableFormats[0];
+	}
 }
 
 status_t DeviceAdapter::initialize(const CameraInfo& info)
@@ -189,7 +193,7 @@ status_t DeviceAdapter::initialize(const CameraInfo& info)
         FLOGE("v4l2 capability does not support capture");
         return BAD_VALUE;
     }
-	//dumpcnt=0;
+
     initSensorInfo(info);
     setPreviewPixelFormat();
     setPicturePixelFormat();
@@ -528,7 +532,7 @@ status_t DeviceAdapter::stopImageCapture()
     Mutex::Autolock lock(mBufsLock);
     mImageCapture = false;
     ret           = stopDeviceLocked();
-
+	#if 0
     // Ellie: turn off flash after taking picture if it's on
     if(mSingleFlashing)
     {
@@ -536,7 +540,7 @@ status_t DeviceAdapter::stopImageCapture()
         mFlashOn=false;
         mSingleFlashing=false;
     }
-
+	#endif
     return ret;
 }
 
@@ -578,13 +582,13 @@ static void bufferDump(CameraFrame *frame)
         vflg = 1;
     if (vflg) {
         FILE *pf = NULL;
-        pf = fopen("/data/test/camera_tst.data", "wb");
+        pf = fopen("/sdcard/camera_tst.data", "wb");
         if (pf == NULL) {
-            FLOGI("open /data/test/camera_tst.data failed");
+            FLOGI("open /sdcard/camera_tst.data failed");
         }
         else {
             FLOGI("-----write-----");
-            fwrite(frame->mVirtAddr, /*frame->mSize*/ frame->mWidth*frame->mHeight*2, 1, pf);
+            fwrite(frame->mVirtAddr, frame->mSize, 1, pf);
             fclose(pf);
         }
         vflg = 0;
@@ -652,8 +656,6 @@ status_t DeviceAdapter::updatePQParam()
 int DeviceAdapter::deviceThread()
 {
     CameraFrame *frame = NULL;
-    uint8_t fl_mode;
-    int res;
 
     if (mQueued <= 0) {
         FLOGI("no buffer in v4l2, continue");
@@ -665,7 +667,10 @@ int DeviceAdapter::deviceThread()
         return BAD_VALUE;
     }
 
+	#if 0
 	// Ellie added: turn on/off flash according to the mode set
+    uint8_t fl_mode;
+    int res;
     res = mMetadaManager->getFlashMode(&fl_mode);
     if (res != NO_ERROR) {
         FLOGE("%s: getFlashMode failed", __FUNCTION__);
@@ -691,13 +696,14 @@ int DeviceAdapter::deviceThread()
     }
 
     updatePQParam();
+	#endif
 
     frame = acquireCameraFrame();
     if (!frame) {
         FLOGE("device thread exit with frame = null, %d buffers still in v4l",
               mQueued);
-        if (mListener != NULL) {
-            mListener->handleError(CAMERA2_MSG_ERROR_DEVICE);
+        if (mErrorListener != NULL) {
+            mErrorListener->handleError(CAMERA2_MSG_ERROR_DEVICE);
         }
         return BAD_VALUE;
     }
@@ -708,18 +714,13 @@ int DeviceAdapter::deviceThread()
         dispatchEvent(cameraEvt);
 
         frame->mFrameType = CameraFrame::IMAGE_FRAME;
-        //bufferDump(frame);
     }
     else {
         frame->mFrameType = CameraFrame::PREVIEW_FRAME;
-        //if(dumpcnt++==100)
-        //	bufferDump(frame);
     }
 
     dispatchCameraFrame(frame);
-    // Ellie Cao changed so that first capture image can be skipped
-    //if (mImageCapture || !mPreviewing) {
-    if (!mPreviewing && !mImageCapture){
+    if (mImageCapture || !mPreviewing) {
         FLOGI("device thread exit...");
         return ALREADY_EXISTS;
     }
@@ -730,6 +731,7 @@ int DeviceAdapter::deviceThread()
 // Ellie implemented: turn on flash before starting autofocus if the mode is "single"
 status_t DeviceAdapter::autoFocus()
 {
+	#if 0
 	uint8_t fl_mode;
 	int ret;
 	struct v4l2_control ctrl;
@@ -755,7 +757,7 @@ status_t DeviceAdapter::autoFocus()
 
 	mFocusStartTime = systemTime();
 	mAutoFocusing = true;
-
+	#endif
     if (mAutoFocusThread != NULL) {
         mAutoFocusThread.clear();
     }
@@ -780,6 +782,8 @@ status_t DeviceAdapter::cancelAutoFocus()
 // Ellie implemented: keep checking the focus state, when autofocus finishes,either success or fail,send notification and turn off flash if the mode is "single"
 int DeviceAdapter::autoFocusThread()
 {
+	#warning "FIXME:autofocus support"
+	#if 0
 	int ret;
 	struct v4l2_control ctrl;
 	int fail=0,success=0;
@@ -841,6 +845,14 @@ int DeviceAdapter::autoFocusThread()
 		mFlashOn=false;
 		mSingleFlashing=false;
 	}
+	#endif
+	sp<CameraEvent> cameraEvt = new CameraEvent();
+    cameraEvt->mEventType = CameraEvent::EVENT_FOCUS;
+	cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED;
+    dispatchEvent(cameraEvt);
+
+    // exit the thread.
+
 	return UNKNOWN_ERROR;
 }
 
@@ -885,9 +897,9 @@ void DeviceAdapter::handleFrameRelease(CameraFrame *buffer)
     }
 }
 
-void DeviceAdapter::setListener(CameraListener *listener)
+void DeviceAdapter::setErrorListener(CameraErrorListener *listener)
 {
-    mListener = listener;
+    mErrorListener = listener;
 }
 
 void DeviceAdapter::setCameraBufferProvide(CameraBufferProvider *bufferProvider)

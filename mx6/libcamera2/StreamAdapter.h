@@ -62,7 +62,7 @@ public:
 
     //CameraFrameListener
     void handleCameraFrame(CameraFrame *frame);
-    void setListener(CameraListener *listener);
+    void setErrorListener(CameraErrorListener *listener);
     void showFps();
     void convertNV12toYV12(StreamBuffer* dst, StreamBuffer* src);
     void convertNV12toNV21(StreamBuffer* dst, StreamBuffer* src);
@@ -118,13 +118,12 @@ protected:
     sp<StreamThread> mStreamThread;
     CMessageQueue mThreadQueue;
     int mStreamState;
-    CameraListener *mListener;
+    CameraErrorListener *mErrorListener;
 
     sp<MetadaManager> mMetadaManager;
     mutable sem_t mRespondSem;
 
     bool mReceiveFrame;
-    int skip; // Ellie Cao added
     // for debug.
     bool mShowFps;
     nsecs_t mTime1;

@@ -230,17 +230,10 @@ int trigger_action(const struct camera2_device *device,
 
     if (camHal != NULL) 
 	{
-		ALOGI("%s:%d", __FUNCTION__,trigger_id);
-		if(trigger_id==CAMERA2_TRIGGER_AUTOFOCUS)
-	        ret = camHal->autoFocus(ext1);
-		else if(trigger_id==CAMERA2_TRIGGER_CANCEL_AUTOFOCUS)
-			ret = camHal->cancelAutoFocus();
-		else
-			ret = camHal->precaptureMetering(ext1);
-		return ret;
+		ret = camHal->trigger_action(trigger_id,ext1,ext2);
     }
-	else
-		return INVALID_OPERATION;
+
+	return ret;
 }
 
 int set_notify_callback(const struct camera2_device *device,

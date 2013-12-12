@@ -21,7 +21,7 @@ RequestManager::RequestManager(int cameraId)
     mRequestOperation = NULL;
     mPendingRequests = 0;
     mCameraId = cameraId;
-    mListener = NULL;
+    mErrorListener = NULL;
     mWorkInProcess = false;
     sem_init(&mThreadExitSem, 0, 1);
 }
@@ -69,33 +69,35 @@ int RequestManager::initialize(CameraInfo& info)
     return ret;
 }
 
-void RequestManager::setListener(CameraListener *listener)
+void RequestManager::setErrorListener(CameraErrorListener *listener)
 {
-    mListener = listener;
+    mErrorListener = listener;
     if (mDeviceAdapter.get() != NULL) {
-        mDeviceAdapter->setListener(this);
+        mDeviceAdapter->setErrorListener(this);
+    }
+}
+
+void RequestManager::setEventListener(CameraEventListener *listener)
+{
+    mEventListener = listener;
+    if (mDeviceAdapter.get() != NULL) {
+        mDeviceAdapter->addEventListener((CameraEventListener*)this);
     }
 }
 
 void RequestManager::handleError(int err)
 {
     mWorkInProcess = false;
-    if (mListener != NULL) {
-        mListener->handleError(err);
+    if (mErrorListener != NULL) {
+        mErrorListener->handleError(err);
     }
 }
 
-void RequestManager::handleFocus(int newstate)
+void RequestManager::handleEvent(sp<CameraEvent>& event)
 {
-    if (mListener != NULL) {
-        mListener->handleFocus(newstate);
-    }
-}
-
-void RequestManager::handlePrecapture(int newstate)
-{
-    if (mListener != NULL) {
-        mListener->handlePrecapture(newstate);
+    fAssert(event != NULL);
+    if (mEventListener != NULL) {
+        mEventListener->handleEvent(event);
     }
 }
 
@@ -451,7 +453,7 @@ int RequestManager::allocateStream(uint32_t width,
     cameraStream->setPreviewWindow(stream_ops);
     cameraStream->setDeviceAdapter(mDeviceAdapter);
     cameraStream->setMetadaManager(mMetadaManager);
-    cameraStream->setListener(this);
+    cameraStream->setErrorListener(this);
 
     mStreamAdapter[sid] = cameraStream;
     FLOG_TRACE("RequestManager %s end...", __FUNCTION__);

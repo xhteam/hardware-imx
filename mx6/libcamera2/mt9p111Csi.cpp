@@ -30,6 +30,7 @@ status_t mt9p111Csi::initSensorInfo(const CameraInfo& info)
 	int sensorFormats[MAX_SENSOR_FORMAT];
 	memset(mAvailableFormats, 0, sizeof(mAvailableFormats));
 	memset(sensorFormats, 0, sizeof(sensorFormats));
+	#if 1
 	struct v4l2_fmtdesc vid_fmtdesc;
 	while (ret == 0) {
 		vid_fmtdesc.index = index;
@@ -44,6 +45,15 @@ status_t mt9p111Csi::initSensorInfo(const CameraInfo& info)
 			sensorFormats[index++] = vid_fmtdesc.pixelformat;
 		}
 	}
+	#else
+	
+    // v4l2 does not support enum format, now hard code here.
+    sensorFormats[index++] = v4l2_fourcc('N', 'V', '1', '2');
+    sensorFormats[index++] = v4l2_fourcc('Y', 'V', '1', '2');
+    sensorFormats[index++] = v4l2_fourcc('B', 'L', 'O', 'B');
+    sensorFormats[index++] = v4l2_fourcc('R', 'A', 'W', 'S');
+	#endif
+
 	mAvailableFormatCount = index;
 	changeSensorFormats(sensorFormats, index);
 

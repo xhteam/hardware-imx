@@ -55,16 +55,15 @@ void StreamAdapter::setMetadaManager(sp<MetadaManager>& metaManager)
     mMetadaManager = metaManager;
 }
 
-void StreamAdapter::setListener(CameraListener *listener)
+void StreamAdapter::setErrorListener(CameraErrorListener *listener)
 {
-    mListener = listener;
+    mErrorListener = listener;
 }
 
 int StreamAdapter::start()
 {
     FLOG_TRACE("StreamAdapter %s running", __FUNCTION__);
 
-    skip=0;
     mTime1 = mTime2 = 0;
     mTotalFrames = mFps = 0;
     mShowFps = false;
@@ -162,7 +161,7 @@ bool StreamAdapter::handleStream()
             frame->release();
             cancelBuffer(frame);
             if (ret != 0) {
-                mListener->handleError(ret);
+                mErrorListener->handleError(ret);
                 if (ret <= CAMERA2_MSG_ERROR_DEVICE) {
                     FLOGI("stream thread dead because of error...");
                     mStreamState = STREAM_EXITED;
@@ -231,16 +230,9 @@ void StreamAdapter::handleCameraFrame(CameraFrame *frame)
     if (!mReceiveFrame) {
         return;
     }
-    else if (mStreamId == STREAM_ID_PREVIEW) {
-        //Ellie Cao:skip first preview frame.
-        if(skip++<1)
-            return;
-    }
     else if (mStreamId == STREAM_ID_JPEG) {
-        //Ellie Cao:skip first capture frames.
-        if(skip++<1)
-            return;
-        mReceiveFrame=false;
+        //captureStream should reveive one frame every time.
+        mReceiveFrame = false;
     }
     //the frame processed in StreamThread.
     frame->addReference();

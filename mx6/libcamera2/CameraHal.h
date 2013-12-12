@@ -26,19 +26,18 @@ using namespace android;
 
 class PhysMemAdapter;
 
-class CameraHal : public CameraListener
+class CameraHal : public CameraErrorListener,
+					public CameraEventListener
 {
 public:
     CameraHal(int cameraId);
     ~CameraHal();
     status_t initialize(CameraInfo& info);
     void handleError(int err);
-    void handleFocus(int newstate);
-    void handlePrecapture(int newstate);
+	void handleEvent(sp<CameraEvent>& event);
 
     //camera2 interface.
-    int set_request_queue_src_ops(
-        const camera2_request_queue_src_ops_t *request_src_ops);
+    int set_request_queue_src_ops(const camera2_request_queue_src_ops_t *request_src_ops);
     int notify_request_queue_not_empty();
     int set_frame_queue_dst_ops(const camera2_frame_queue_dst_ops_t *frame_dst_ops);
     int get_in_progress_count();
@@ -66,15 +65,16 @@ public:
     int get_metadata_vendor_tag_ops(vendor_tag_query_ops_t **ops);
     int set_notify_callback(camera2_notify_callback notify_cb,
             void *user);
+	int trigger_action(uint32_t trigger_id,int32_t ext1,int32_t ext2);
 
     void     release();
     status_t dump(int fd) const;
 
     void     LockWakeLock();
     void     UnLockWakeLock();
-    int autoFocus(int32_t triggerID);
-    int cancelAutoFocus();
-    int precaptureMetering(int32_t triggerID);
+    int autoFocus(void);
+    int cancelAutoFocus(void);
+    int precaptureMetering(void);
 
 private:
     bool mPowerLock;
@@ -87,7 +87,8 @@ private:
     const camera2_frame_queue_dst_ops *mFrameQueue;
     camera2_notify_callback mNotifyCb;
     void *mNotifyUserPtr;
-    int trigger_id;
+    uint32_t triggerid_af;
+	uint32_t triggerid_precapture;
 };
 
 #endif // ifndef _CAMERA_HAL_H

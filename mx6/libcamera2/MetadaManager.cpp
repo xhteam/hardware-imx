@@ -510,7 +510,6 @@ status_t MetadaManager::getJpegRotation(int32_t &jpegRotation)
     }
 
     jpegRotation = streams.data.i32[0];
-    ALOGI("getJpegRotation %d",jpegRotation);
     return NO_ERROR;
 }
 

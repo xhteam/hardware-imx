@@ -20,7 +20,7 @@
 using namespace android;
 
 CameraHal::CameraHal(int cameraId)
-    : mPowerLock(false), mCameraId(cameraId)
+    : mPowerLock(false), mCameraId(cameraId),triggerid_af(0),triggerid_precapture(0)
 {
 
 }
@@ -47,32 +47,15 @@ void CameraHal::handleError(int err)
     }
 }
 
-// Ellie added
-void CameraHal::handleFocus(int newstate)
+void CameraHal::handleEvent(sp<CameraEvent>& event)
 {
-	if(newstate==ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED) 
-	{
-		FLOGI("%s focused", __FUNCTION__);
-		mNotifyCb(CAMERA2_MSG_AUTOFOCUS, ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED, trigger_id, 0, mNotifyUserPtr);
-	}
-	else if(newstate==ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED)	
-	{
-		FLOGI("%s focus failed", __FUNCTION__);
-		mNotifyCb(CAMERA2_MSG_AUTOFOCUS, ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED, trigger_id, 0, mNotifyUserPtr);
-	}
-}
-
-void CameraHal::handlePrecapture(int newstate)
-{
-	if(newstate==ANDROID_CONTROL_AE_STATE_PRECAPTURE) 
-	{
-		FLOGI("%s start", __FUNCTION__);
-		mNotifyCb(CAMERA2_MSG_AUTOEXPOSURE, ANDROID_CONTROL_AE_STATE_PRECAPTURE, trigger_id, 0, mNotifyUserPtr);
-	}
-	else if(newstate==ANDROID_CONTROL_AE_STATE_INACTIVE)	
-	{
-		FLOGI("%s end", __FUNCTION__);
-		mNotifyCb(CAMERA2_MSG_AUTOEXPOSURE, ANDROID_CONTROL_AE_STATE_INACTIVE, trigger_id, 0, mNotifyUserPtr);
+	FLOGW("handleEvent type=%d\n",event->mEventType);
+	if(CameraEvent::EVENT_FOCUS==event->mEventType){
+		mNotifyCb(CAMERA2_MSG_AUTOFOCUS,(int32_t)event->mData,triggerid_af,0,mNotifyUserPtr);
+	}else if(CameraEvent::EVENT_EXPOSURE==event->mEventType){
+		mNotifyCb(CAMERA2_MSG_AUTOEXPOSURE,(int32_t)event->mData,triggerid_precapture,0,mNotifyUserPtr);
+	}else if(CameraEvent::EVENT_WB==event->mEventType){
+		mNotifyCb(CAMERA2_MSG_AUTOWB,(int32_t)event->mData,triggerid_precapture,0,mNotifyUserPtr);
 	}
 }
 
@@ -162,6 +145,25 @@ int CameraHal::set_notify_callback(camera2_notify_callback notify_cb,
     return NO_ERROR;
 }
 
+int CameraHal::trigger_action(uint32_t trigger_id,int32_t ext1,int32_t ext2){
+	int ret;
+	ALOGI("%s:%d ext1[0x%x] ext2[0x%x]", __FUNCTION__,trigger_id,ext1,ext2);
+	if(trigger_id==CAMERA2_TRIGGER_AUTOFOCUS){
+		triggerid_af = ext1;
+		ret = autoFocus();
+	}
+	else if(trigger_id==CAMERA2_TRIGGER_CANCEL_AUTOFOCUS){
+		triggerid_af = ext1;
+		ret = cancelAutoFocus();
+	}
+	else if(trigger_id==CAMERA2_TRIGGER_PRECAPTURE_METERING){
+		triggerid_precapture = ext1;
+		ret = precaptureMetering();
+	}
+	return INVALID_OPERATION;
+}
+
+
 status_t CameraHal::initialize(CameraInfo& info)
 {
     status_t ret = NO_ERROR;
@@ -179,7 +181,8 @@ status_t CameraHal::initialize(CameraInfo& info)
         return ret;
     }
 
-    mRequestManager->setListener(this);
+    mRequestManager->setErrorListener(this);
+	mRequestManager->setEventListener(this);
 
     return ret;
 }
@@ -211,20 +214,18 @@ status_t CameraHal::dump(int fd) const
 }
 
 // Ellie added
-int CameraHal::autoFocus(int32_t triggerID)
+int CameraHal::autoFocus(void)
 {
-    trigger_id=triggerID;
     return mRequestManager->autoFocus();
 }
 
-int CameraHal::cancelAutoFocus()
+int CameraHal::cancelAutoFocus(void)
 {
     return mRequestManager->cancelAutoFocus();
 }
 
-int CameraHal::precaptureMetering(int32_t triggerID)
+int CameraHal::precaptureMetering(void)
 {
-    trigger_id=triggerID;
     return mRequestManager->precaptureMetering();
 }
 

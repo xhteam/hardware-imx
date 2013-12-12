@@ -39,7 +39,7 @@ public:
 
 protected:
     int mIonFd;
-    //CameraErrorListener *mErrorListener;
+    CameraErrorListener *mErrorListener;
 
     CameraFrame mCameraBuffer[MAX_CAPTURE_BUFFER];
 

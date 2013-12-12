@@ -46,8 +46,8 @@ fail:
     freeBuffers();
     FLOGE("Error occurred, performing cleanup");
 
-    if (NULL != mListener) {
-        mListener->handleError(errCode);
+    if (NULL != mErrorListener) {
+        mErrorListener->handleError(errCode);
     }
 
     return BAD_VALUE;

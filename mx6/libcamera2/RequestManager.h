@@ -43,8 +43,9 @@ using namespace android;
 
 #define MAX_STREAM_NUM  6
 
-class RequestManager : public LightRefBase<RequestManager>,
-                       public CameraListener
+class RequestManager :public CameraErrorListener,
+						public CameraEventListener,
+                       public LightRefBase<RequestManager>
 {
 public:
     RequestManager(int cameraId);
@@ -69,7 +70,10 @@ public:
     int dispatchRequest();
     bool handleRequest();
     void release();
-    void setListener(CameraListener *listener);
+    void setErrorListener(CameraErrorListener *listener);
+    void setEventListener(CameraEventListener *listener);
+
+	void handleEvent(sp<CameraEvent>& event);
 
 	// Ellie added
     int autoFocus();
@@ -95,9 +99,6 @@ private:
     void stopAllStreams();
     bool isStreamValid(int requestType, int streamId, int videoSnap);
     void handleError(int err);
-	// Ellie added
-    void handleFocus(int newstate);
-    void handlePrecapture(int newstate);
 
 private:
     sp<DeviceAdapter>  mDeviceAdapter;
@@ -111,7 +112,8 @@ private:
     mutable Mutex mStreamLock;
     uint8_t mPendingRequests;
     int mCameraId;
-    CameraListener *mListener;
+    CameraErrorListener *mErrorListener;
+	CameraEventListener *mEventListener;
     bool mWorkInProcess;
     mutable sem_t mThreadExitSem;
 };

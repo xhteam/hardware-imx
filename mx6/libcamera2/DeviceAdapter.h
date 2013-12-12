@@ -37,7 +37,7 @@ public:
     virtual int      getFrameSize();
     virtual int      getFrameCount();
 
-    void             setListener(CameraListener *listener);
+    void             setErrorListener(CameraErrorListener *listener);
     void             setCameraBufferProvide(CameraBufferProvider *bufferProvider);
     virtual status_t initialize(const CameraInfo& info);
     virtual status_t setDeviceConfig(int         width,
@@ -144,7 +144,7 @@ private:
 
 protected:
     CameraBufferProvider *mBufferProvider;
-    CameraListener  *mListener;
+    CameraErrorListener  *mErrorListener;
     int mBufferCount;
     int mBufferSize;
     CameraFrame* mDeviceBufs[MAX_PREVIEW_BUFFER];
@@ -172,7 +172,6 @@ protected:
     nsecs_t mFocusStartTime;
     bool mAutoFocusing;
     bool mSingleFlashing;
-    //int dumpcnt;
 };
 
 #endif // ifndef _DEVICE_ADAPTER_H_
