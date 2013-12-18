@@ -913,6 +913,7 @@ static int do_output_standby(struct imx_stream_out *out)
 
         /* if in call, don't turn off the output stage. This will
         be done when the call is ended */
+        /*
         if (adev->mode != AUDIO_MODE_IN_CALL) {
 			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
 				set_route_by_array(adev->mixer[i], adev->card_list[i]->bt_output, 0);
@@ -923,7 +924,7 @@ static int do_output_standby(struct imx_stream_out *out)
 			for(i = 0; i < MAX_AUDIO_CARD_NUM; i++)
 				set_route_by_array(adev->mixer[i], adev->card_list[i]->earpiece_output,0);
         }
-
+		*/
         /* stop writing to echo reference */
         if (out->echo_reference != NULL) {
             out->echo_reference->write(out->echo_reference, NULL);
