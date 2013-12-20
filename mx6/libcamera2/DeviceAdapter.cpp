@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include <linux/videodev2.h>
+#include <linux/mxc_v4l2.h>
 #include "DeviceAdapter.h"
 #include "UvcDevice.h"
 #include "Ov5640Mipi.h"
@@ -758,6 +759,7 @@ status_t DeviceAdapter::autoFocus()
 	mFocusStartTime = systemTime();
 	mAutoFocusing = true;
 	#endif
+	mAutoFocusing = true;
     if (mAutoFocusThread != NULL) {
         mAutoFocusThread.clear();
     }
@@ -774,6 +776,11 @@ status_t DeviceAdapter::cancelAutoFocus()
 {
 	Mutex::Autolock lock(mFocusLock);
 
+	struct v4l2_control ctrl;	
+	ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
+	ctrl.value = 0;
+	ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl);
+
 	mAutoFocusing = false;
 
 	return NO_ERROR;
@@ -782,73 +789,42 @@ status_t DeviceAdapter::cancelAutoFocus()
 // Ellie implemented: keep checking the focus state, when autofocus finishes,either success or fail,send notification and turn off flash if the mode is "single"
 int DeviceAdapter::autoFocusThread()
 {
-	#warning "FIXME:autofocus support"
-	#if 0
+	Mutex::Autolock lock(mFocusLock);
+
 	int ret;
-	struct v4l2_control ctrl;
-	int fail=0,success=0;
-	uint8_t fl_mode;
-
+	int success=0;
+	DurationTimer duration;
+	struct v4l2_control ctrl;	
 	ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
-	ctrl.value = 0;
-	ret = ioctl(mCameraHandle, VIDIOC_G_CTRL, &ctrl);
-	if (ret < 0) {
-		FLOGE("autoFocusThread: VIDIOC_G_CTRL Failed: %s", strerror(errno));
-		fail=1;
-	}
-	else
-	{
-		if(ctrl.value)
-		{
-			success=1;
-		}
-		else
-		{
-			if(systemTime()>(mFocusStartTime+2000000000)) 
-				fail=1;
-		}
-	}
-
-	mFocusLock.lock();
-	if(mAutoFocusing)
-	{
-		if(success)
-		{
-			if (mListener != NULL) {
-				mListener->handleFocus(ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED);
-			}
-		}
-		else if(fail)
-		{
-			if (mListener != NULL) {
-				mListener->handleFocus(ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED);
-			}
-		}
-		else
-		{
-			mFocusLock.unlock();
-			return NO_ERROR;
-		}
-	}
-	mAutoFocusing = false;
-	mFocusLock.unlock();
-
-	ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
-	ctrl.value = 0;
+	ctrl.value = 1;
+	duration.start();
 	ret = ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl);
 	if (ret < 0) {
 		FLOGE("autoFocusThread: VIDIOC_S_CTRL Failed: %s", strerror(errno));
 	}
-	if(mSingleFlashing)
-	{
-		setFlash(0);
-		mFlashOn=false;
-		mSingleFlashing=false;
-	}
-	#endif
+
+	do {
+		usleep(1000000);
+		ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
+		ctrl.value = 0;
+		ret = ioctl(mCameraHandle, VIDIOC_G_CTRL, &ctrl);
+		if (ret < 0) {
+			FLOGE("autoFocusThread: VIDIOC_G_CTRL Failed: %s", strerror(errno));
+		}
+		else if(ctrl.value)
+				success++;
+
+		duration.stop();
+	}while(!success&&duration.durationUsecs()<2000000000);
+
+
 	sp<CameraEvent> cameraEvt = new CameraEvent();
     cameraEvt->mEventType = CameraEvent::EVENT_FOCUS;
-	cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED;
+	if(success)
+		cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED;
+	else
+		cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_PASSIVE_FOCUSED;		
+	
     dispatchEvent(cameraEvt);
 
     // exit the thread.

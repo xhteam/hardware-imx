@@ -724,7 +724,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
             tag, data, count) ) != OK ) return ret
 
     // android.lens
-    static float minFocusDistance = 1; /*Ellie changed to support autofocus*/
+    static float minFocusDistance = 0.1f; /*Ellie changed to support autofocus*/
     ADD_OR_SIZE(ANDROID_LENS_MINIMUM_FOCUS_DISTANCE,
             &minFocusDistance, 1);
     ADD_OR_SIZE(ANDROID_LENS_HYPERFOCAL_DISTANCE,
