@@ -823,7 +823,7 @@ int DeviceAdapter::autoFocusThread()
 	if(success)
 		cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED;
 	else
-		cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_PASSIVE_FOCUSED;		
+		cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED;		
 	
     dispatchEvent(cameraEvt);
 
