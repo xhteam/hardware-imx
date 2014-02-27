@@ -5859,6 +5859,7 @@ check_sys_config(t_u8 * buf, t_u16 len)
 	char country_80211d[4] = { 'U', 'S', ' ', 0 };
 	t_u8 state_80211h = 0;
 	int channel_tlv_band = BAND_B | BAND_G;
+	t_u8 secondary_ch_set = 0;
 	int scan_channels_band = BAND_B | BAND_G;
 	t_u8 state_80211d = 0;
 	t_u8 rate = 0;
@@ -5867,7 +5868,6 @@ check_sys_config(t_u8 * buf, t_u16 len)
 	t_u16 enable_40Mhz = 0;
 	t_u16 enable_20Mhz_sgi = 0;
 	t_u16 enable_gf = 0;
-	t_u8 secondary_ch_set = 0;
 	t_u8 enable_11n = 0;
 	int flag = 0;
 	fw_info fw;
@@ -5957,8 +5957,37 @@ check_sys_config(t_u8 * buf, t_u16 len)
 				printf("ERR: Invalid channel 14, 802.11d disabled, country code JP!\n");
 				return UAP_FAILURE;
 			}
+
 			if (channel_tlv->band_config_type & BAND_CONFIG_5GHZ)
 				channel_tlv_band = BAND_A;
+			secondary_ch_set = channel_tlv->band_config_type & 0x30;
+			if (channel_tlv_band != BAND_A) {
+				/* When country code is not Japan, allow
+				   channels 5-11 only for secondary channel
+				   below */
+				if ((secondary_ch_set == SECOND_CHANNEL_BELOW)
+				    && (channel_tlv->chan_number >
+					DEFAULT_MAX_CHANNEL_BELOW) &&
+				    (strncmp
+				     (country_80211d, "JP",
+				      COUNTRY_CODE_LEN - 1))) {
+					printf("ERR: Only channels 5-11 are allowed with secondary channel below for non-Japan countries!\n");
+					return UAP_FAILURE;
+				}
+
+				/* When country code is not Japan, allow
+				   channels 1-7 only for secondary channel
+				   above */
+				if ((secondary_ch_set == SECOND_CHANNEL_ABOVE)
+				    && (channel_tlv->chan_number >
+					DEFAULT_MAX_CHANNEL_ABOVE) &&
+				    (strncmp
+				     (country_80211d, "JP",
+				      COUNTRY_CODE_LEN - 1))) {
+					printf("ERR: Only channels 1-7 are allowed with secondary channel above for non-Japan countries!\n");
+					return UAP_FAILURE;
+				}
+			}
 			if (!
 			    (channel_tlv->
 			     band_config_type & BAND_CONFIG_ACS_MODE)) {
@@ -5994,8 +6023,6 @@ check_sys_config(t_u8 * buf, t_u16 len)
 				printf("ERR:Channel 12 or 13 is not allowed for region code 0xFE\n");
 				return UAP_FAILURE;
 			}
-			channel_tlv->band_config_type &= 0x30;
-			secondary_ch_set = channel_tlv->band_config_type;
 			break;
 		case MRVL_CHANNELLIST_TLV_ID:
 			chnlist_tlv = (tlvbuf_channel_list *) pcurrent_tlv;
@@ -6008,24 +6035,6 @@ check_sys_config(t_u8 * buf, t_u16 len)
 			chan_list_len = tlv_len / sizeof(channel_list);
 
 			for (i = 0; i < chan_list_len; i++) {
-
-				if ((!state_80211d) &&
-				    (pchan_list->chan_number == MAX_CHANNELS_BG)
-				    &&
-				    (strncmp
-				     (country_80211d, "JP",
-				      COUNTRY_CODE_LEN - 1) == 0)
-					) {
-					printf("ERR: Invalid scan channel 14, 802.11d disabled, country code JP!\n");
-					return UAP_FAILURE;
-				}
-
-				if (fw.region_code == JP_REGION_0xFE &&
-				    ((pchan_list->chan_number == 12) ||
-				     (pchan_list->chan_number == 13))) {
-					printf("ERR:Scan Channel 12 or 13 is not allowed for region code 0xFE\n");
-					return UAP_FAILURE;
-				}
 				if ((scan_channels_band != BAND_A) &&
 				    (pchan_list->
 				     band_config_type & BAND_CONFIG_5GHZ)) {
@@ -6148,60 +6157,74 @@ check_sys_config(t_u8 * buf, t_u16 len)
 			return UAP_FAILURE;
 		}
 	}
-	if (enable_11n) {
-		/* For protocol = Mixed, 11n enabled, only allow TKIP cipher
-		   for WPA protocol, not for WPA2 */
-		if ((protocol == PROTOCOL_WPA2_MIXED) &&
-		    (pairwise_cipher_wpa2 == CIPHER_TKIP)) {
-			printf("ERR: WPA2 pairwise cipher cannot be TKIP when AP operates in 802.11n Mixed mode.\n");
-			return UAP_FAILURE;
-		} else if (protocol == PROTOCOL_STATIC_WEP) {
-			printf("ERR: WEP cannot be used when AP operates in 802.11n mode.\n");
-			return UAP_FAILURE;
-		}
+
+	if (chnlist_tlv == NULL) {
+		printf("ERR: No channel list found\n");
+		return UAP_FAILURE;
 	}
-	/* Block scan channels 8 and 12 in 5GHz band if 11d is not enabled and
-	   country code not set to JP */
-	if (!state_80211d) {
-		if (chnlist_tlv == NULL) {
-			printf("ERR: No channel list found\n");
-			return UAP_FAILURE;
-		}
+	if (acs_mode_enabled) {
 		pchan_list = (channel_list *) & (chnlist_tlv->chan_list);
 		for (i = 0; i < chan_list_len; i++) {
-			if ((pchan_list->band_config_type & BAND_CONFIG_5GHZ)
-			    && ((pchan_list->chan_number == 8) ||
-				(pchan_list->chan_number == 12))) {
-				printf("ERR: Invalid band for scan channel %d\n", pchan_list->chan_number);
+			if ((!state_80211d) &&
+			    (pchan_list->chan_number == MAX_CHANNELS_BG)
+			    &&
+			    (strncmp(country_80211d, "JP", COUNTRY_CODE_LEN - 1)
+			     == 0)
+				) {
+				printf("ERR: Invalid scan channel 14, 802.11d disabled, country code JP!\n");
 				return UAP_FAILURE;
 			}
-		}
-	}
-	if (state_80211d && acs_mode_enabled) {
-		/* Set default country code to US */
-		strncpy(country_80211d, "US ", sizeof(country_80211d) - 1);
-		if (chnlist_tlv == NULL) {
-			printf("ERR: No channel list found\n");
-			return UAP_FAILURE;
-		}
-		pchan_list = (channel_list *) & (chnlist_tlv->chan_list);
-		for (i = 0; i < chan_list_len; i++) {
-			/* Set country code to JP if channel is 8 or 12 and
-			   band is 5GHZ */
-			if ((pchan_list->chan_number < MAX_CHANNELS_BG) &&
-			    (scan_channels_band == BAND_A)) {
-				strncpy(country_80211d, "JP ",
-					sizeof(country_80211d) - 1);
-			}
-			if (check_channel_validity_11d
-			    (pchan_list->chan_number, scan_channels_band,
-			     0) == UAP_FAILURE)
+
+			if (fw.region_code == JP_REGION_0xFE &&
+			    ((pchan_list->chan_number == 12) ||
+			     (pchan_list->chan_number == 13))) {
+				printf("ERR:Scan Channel 12 or 13 is not allowed for region code 0xFE\n");
 				return UAP_FAILURE;
+			}
 			pchan_list++;
 		}
-		if (update_domain_info(country_80211d, scan_channels_band) ==
-		    UAP_FAILURE) {
-			return UAP_FAILURE;
+
+		if (!state_80211d) {
+			/* Block scan channels 8 and 12 in 5GHz band if 11d is
+			   not enabled and country code not set to JP */
+			pchan_list =
+				(channel_list *) & (chnlist_tlv->chan_list);
+			for (i = 0; i < chan_list_len; i++) {
+				if ((pchan_list->
+				     band_config_type & BAND_CONFIG_5GHZ)
+				    && ((pchan_list->chan_number == 8) ||
+					(pchan_list->chan_number == 12))) {
+					printf("ERR: Invalid band for scan channel %d\n", pchan_list->chan_number);
+					return UAP_FAILURE;
+				}
+				pchan_list++;
+			}
+		}
+		if (state_80211d) {
+			/* Set default country code to US */
+			strncpy(country_80211d, "US ",
+				sizeof(country_80211d) - 1);
+			pchan_list =
+				(channel_list *) & (chnlist_tlv->chan_list);
+			for (i = 0; i < chan_list_len; i++) {
+				/* Set country code to JP if channel is 8 or 12
+				   and band is 5GHZ */
+				if ((pchan_list->chan_number < MAX_CHANNELS_BG)
+				    && (scan_channels_band == BAND_A)) {
+					strncpy(country_80211d, "JP ",
+						sizeof(country_80211d) - 1);
+				}
+				if (check_channel_validity_11d
+				    (pchan_list->chan_number,
+				     scan_channels_band, 0) == UAP_FAILURE)
+					return UAP_FAILURE;
+				pchan_list++;
+			}
+			if (update_domain_info
+			    (country_80211d,
+			     scan_channels_band) == UAP_FAILURE) {
+				return UAP_FAILURE;
+			}
 		}
 	}
 #ifdef WIFI_DIRECT_SUPPORT
@@ -6236,7 +6259,10 @@ check_sys_config(t_u8 * buf, t_u16 len)
 			}
 			if ((rate_bitmap & B_RATE_MANDATORY) !=
 			    B_RATE_MANDATORY) {
-				printf("ERR: Invalid rates for BG band!\n");
+				if (acs_mode_enabled)
+					printf("ERR: Rates/Scan channels do not match!\n");
+				else
+					printf("ERR: Rates/Channel do not match!\n");
 				return UAP_FAILURE;
 			}
 		}
@@ -6254,7 +6280,10 @@ check_sys_config(t_u8 * buf, t_u16 len)
 			case 4:
 			case 11:
 			case 22:
-				printf("ERR: Invalid rate for A band channel!\n");
+				if (acs_mode_enabled)
+					printf("ERR: Rates/Scan channels do not match!\n");
+				else
+					printf("ERR: Rates/Channel do not match!\n");
 				return UAP_FAILURE;
 			}
 		}
@@ -6266,6 +6295,18 @@ check_sys_config(t_u8 * buf, t_u16 len)
 			return UAP_FAILURE;
 		}
 		if (update_domain_info(country_80211d, BAND_A) == UAP_FAILURE) {
+			return UAP_FAILURE;
+		}
+	}
+	if (enable_11n) {
+		/* For protocol = Mixed, 11n enabled, only allow TKIP cipher
+		   for WPA protocol, not for WPA2 */
+		if ((protocol == PROTOCOL_WPA2_MIXED) &&
+		    (pairwise_cipher_wpa2 == CIPHER_TKIP)) {
+			printf("ERR: WPA2 pairwise cipher cannot be TKIP when AP operates in 802.11n Mixed mode.\n");
+			return UAP_FAILURE;
+		} else if (protocol == PROTOCOL_STATIC_WEP) {
+			printf("ERR: WEP cannot be used when AP operates in 802.11n mode.\n");
 			return UAP_FAILURE;
 		}
 	}
@@ -9410,6 +9451,8 @@ static command_table ap_command[] = {
 #endif
 	{"mgmtframectrl", apcmd_mgmt_frame_control,
 	 "\tSpecifies mask indicating management frames to be sent from host."},
+	{"sys_cfg_restrict_client_mode", apcmd_sys_cfg_restrict_client_mode,
+	 "\tSet/get the mode in which client stations can connect to the uAP."},
 	{NULL, NULL, 0}
 };
 
@@ -9718,15 +9761,15 @@ is_input_valid(valid_inputs cmd, int argc, char *argv[])
 					     BITMAP_CHANNEL_ABOVE) &&
 					    (atoi(argv[0]) >
 					     MAX_CHANNEL_ABOVE)) {
-						printf("ERR: only allow channel 1-7 for secondary channel above\n");
+						printf("ERR: only allow channel 1-9 for secondary channel above\n");
 						ret = UAP_FAILURE;
 					}
 					if ((argc == 2) &&
 					    (atoi(argv[1]) &
 					     BITMAP_CHANNEL_BELOW) &&
-					    (atoi(argv[0]) <
-					     MIN_CHANNEL_BELOW)) {
-						printf("ERR: only allow channel 5-11 for secondary channel below\n");
+					    ((atoi(argv[0]) < MIN_CHANNEL_BELOW)
+					     || (atoi(argv[0]) == 14))) {
+						printf("ERR: only allow channel 5-13 for secondary channel below\n");
 						ret = UAP_FAILURE;
 					}
 				} else {
@@ -9799,15 +9842,15 @@ is_input_valid(valid_inputs cmd, int argc, char *argv[])
 					     BITMAP_CHANNEL_ABOVE) &&
 					    (atoi(argv[0]) >
 					     MAX_CHANNEL_ABOVE)) {
-						printf("ERR: only allow channel 1-7 for secondary channel above\n");
+						printf("ERR: only allow channel 1-9 for secondary channel above\n");
 						ret = UAP_FAILURE;
 					}
 					if ((argc == 3) &&
 					    (atoi(argv[2]) &
 					     BITMAP_CHANNEL_BELOW) &&
-					    (atoi(argv[0]) <
-					     MIN_CHANNEL_BELOW)) {
-						printf("ERR: only allow channel 5-11 for secondary channel below\n");
+					    ((atoi(argv[0]) < MIN_CHANNEL_BELOW)
+					     || (atoi(argv[0]) == 14))) {
+						printf("ERR: only allow channel 5-13 for secondary channel below\n");
 						ret = UAP_FAILURE;
 					}
 				} else {
@@ -10275,6 +10318,35 @@ is_input_valid(valid_inputs cmd, int argc, char *argv[])
 			    (atoi(argv[0]) & ~CIPHER_BITMAP) ||
 			    (atoi(argv[0]) == AES_CCMP_TKIP)) {
 				printf("Invalid group cipher.\n");
+				ret = UAP_FAILURE;
+			}
+		}
+		break;
+	case RESTRICT_CLIENT_MODE:
+		if ((argc != 1) && (argc != 2)) {
+			printf("ERR: Incorrect number of arguments.\n");
+			ret = UAP_FAILURE;
+		} else {
+			if ((ISDIGIT(argv[0]) == 0) || ((argc == 2) &&
+							((IS_HEX_OR_DIGIT
+							  (argv[1]) == 0) ||
+							 ((atoi(argv[0]) < 0) ||
+							  (atoi(argv[0]) >
+							   1))))) {
+				printf("ERR: Invalid arguments\n");
+				ret = UAP_FAILURE;
+			}
+			if ((atoi(argv[0]) == 1) && (argc == 1)) {
+				printf("ERR: Mode_config parameter must be provided to enable this feature.\n");
+				ret = UAP_FAILURE;
+			}
+			if ((argc == 2) &&
+			    (((A2HEXDECIMAL(argv[1]) << 8) != B_ONLY_MASK) &&
+			     ((A2HEXDECIMAL(argv[1]) << 8) != G_ONLY_MASK) &&
+			     ((A2HEXDECIMAL(argv[1]) << 8) != A_ONLY_MASK) &&
+			     ((A2HEXDECIMAL(argv[1]) << 8) != N_ONLY_MASK) &&
+			     ((A2HEXDECIMAL(argv[1]) << 8) != AC_ONLY_MASK))) {
+				printf("ERR: Exactly one mode can be enabled at a time.\n");
 				ret = UAP_FAILURE;
 			}
 		}

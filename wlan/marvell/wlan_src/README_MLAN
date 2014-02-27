@@ -61,6 +61,7 @@
 	  pm_keep_power=1|0 <PM keep power in suspend (default) | PM no power in suspend>
 	  cfg_11d=0|1|2 <use MLAN default | enable 11d | disable 11d>
 	  req_fw_nowait=0|1 <use request_firmware API (default) | use request_firmware_nowait API>
+	  fw_crc_check=1|0 <enable FW download CRC check (default) | disable FW download CRC check>
 	  init_cfg=<init config (MAC addresses, registers etc.) file name>
 		e.g. copy init_cfg.conf to firmware directory, init_cfg=mrvl/init_cfg.conf
 	  cal_data_cfg=<CAL data config file name>
@@ -285,6 +286,7 @@ SYNOPSIS
 	mlanutl mlanX hostcmd <auto_tx.conf> auto_tx_unreg
 	mlanutl mlanX hostcmd <bg_scan.conf> bgscfg
 	mlanutl mlanX hostcmd <pkt_coalescing.conf> coalesce_cfg
+	mlanutl mlanX hostcmd <ed_mac_ctrl.conf> ed_mac_ctrl
 	mlanutl mlanX hostcmd <crypto_test.conf> crypto_test
 	mlanutl mlanX hostcmd <auto_tx.conf> nat_keep_alive
 	mlanutl mlanX hostcmd <pad_cfg.conf> pad_cfg_get
@@ -304,6 +306,7 @@ SYNOPSIS
 	mlanutl mlanX hostcmd <txrate_cfg.conf> txrate_cfg_get
 	mlanutl mlanX hostcmd <txrate_cfg.conf> txrate_cfg_set_bg
 	mlanutl mlanX hostcmd <txrate_cfg.conf> txrate_cfg_set_bgn
+	mlanutl mlanX hostcmd <conf> generate_raw <raw_data_file>
 	mlanutl mlanX hotspotcfg [<bitmap>]
 	mlanutl mlanX hscfg [condition [[GPIO# [gap]]]]
 	mlanutl mlanX hssetpara condition [GPIO# [gap]]
@@ -364,7 +367,6 @@ SYNOPSIS
 	mlanutl mlanX wpssession [n]
 	mlanutl mlanX wmmcfg [n]
 	mlanutl mlanX wwscfg [m]
-
 DESCRIPTION
 	Those commands are used to send additional commands to the Marvell MLAN
 	card via the Linux device driver.
@@ -1065,6 +1067,12 @@ hostcmd <pkt_coalescing.conf> coalesce_cfg
 	Usage:
 		mlanutl mlanX hostcmd <pkt_coalescing.conf> coalesce_cfg
 
+hostcmd <ed_mac_ctrl.conf> ed_mac_ctrl
+	This command is used to control ED MAC.
+
+	Usage:
+		mlanutl mlanX hostcmd <ed_mac_ctrl.conf> ed_mac_ctrl
+
 hostcmd crypto_test
 	This command is used to test the encryption/decryption API of the firmware.
 
@@ -1147,6 +1155,13 @@ hostcmd txrate_cfg_set_bgn
 		mlanutl mlanX hostcmd config/txrate_cfg.conf txrate_cfg_get
 		mlanutl mlanX hostcmd config/txrate_cfg.conf txrate_cfg_set_bg
 		mlanutl mlanX hostcmd config/txrate_cfg.conf txrate_cfg_set_bgn
+
+hostcmd generate_raw
+	This command is used to generate the raw data(hostcommand block) for
+	hostcommand in <conf_file> and write that to file <raw_data_file>
+
+	Usage:
+		mlanutl mlanX hostcmd <conf_file> generate_raw <raw_data_file>
 
 hotspotcfg
 	This command is used to get/set the HotSpot configuration.
@@ -1995,19 +2010,6 @@ sysclock
 		mlanutl mlanX sysclock 0 0 128   : Set system clock in non-security A-MPDU
 		                                  mode to 128 MHz, no changes for others
 
-tcpackenh
-	This command is used to set/get TCP ACK enhancement mode.
-
-	where
-	[l] is a control to set TCP ACK enhancement mode
-		1   -- Enable TCP ACK enhancement (default)
-		0   -- Disable TCP ACK enhancement
-
-	Examples:
-		mlanutl mlan0 tcpackenh          : Display TCP ACK enhancement
-		mlanutl mlan0 tcpackenh 1        : Enable TCP ACK enhancement
-		mlanutl mlan0 tcpackenh 0        : Disable TCP ACK enhancement
-
 thermal
 	This command is used to get the current thermal reading.
 
@@ -2172,4 +2174,5 @@ wwscfg
 		mlanutl mlan0 wwscfg             : Get WWS mode
 		mlanutl mlan0 wwscfg 1           : Enable WWS mode
 		mlanutl mlan0 wwscfg 0           : Disable WWS mode
+
 ===============================================================================

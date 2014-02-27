@@ -611,9 +611,10 @@ wlan_cmd_mac_multicast_adr(IN pmlan_private pmpriv,
 }
 
 /**
- *  @brief This function prepares command of deauthenticate.
+ *  @brief This function prepares command of deauthenticate/disassociate.
  *
  * @param pmpriv       A pointer to mlan_private structure
+ * @param cmd_no       Command number
  * @param cmd          A pointer to HostCmd_DS_COMMAND structure
  * @param pdata_buf    A pointer to data buffer
  *
@@ -621,6 +622,7 @@ wlan_cmd_mac_multicast_adr(IN pmlan_private pmpriv,
  */
 static mlan_status
 wlan_cmd_802_11_deauthenticate(IN pmlan_private pmpriv,
+			       IN t_u16 cmd_no,
 			       IN HostCmd_DS_COMMAND * cmd,
 			       IN t_void * pdata_buf)
 {
@@ -628,7 +630,7 @@ wlan_cmd_802_11_deauthenticate(IN pmlan_private pmpriv,
 
 	ENTER();
 
-	cmd->command = wlan_cpu_to_le16(HostCmd_CMD_802_11_DEAUTHENTICATE);
+	cmd->command = wlan_cpu_to_le16(cmd_no);
 	cmd->size =
 		wlan_cpu_to_le16(sizeof(HostCmd_DS_802_11_DEAUTHENTICATE) +
 				 S_DS_GEN);
@@ -636,8 +638,12 @@ wlan_cmd_802_11_deauthenticate(IN pmlan_private pmpriv,
 	/* Set AP MAC address */
 	memcpy(pmpriv->adapter, pdeauth->mac_addr, (t_u8 *) pdata_buf,
 	       MLAN_MAC_ADDR_LENGTH);
-
-	PRINTM(MCMND, "Deauth: " MACSTR "\n", MAC2STR(pdeauth->mac_addr));
+	if (cmd_no == HostCmd_CMD_802_11_DEAUTHENTICATE)
+		PRINTM(MCMND, "Deauth: " MACSTR "\n",
+		       MAC2STR(pdeauth->mac_addr));
+	else
+		PRINTM(MCMND, "Disassociate: " MACSTR "\n",
+		       MAC2STR(pdeauth->mac_addr));
 
 	if (pmpriv->adapter->state_11h.recvd_chanswann_event) {
 /** Reason code 36 = Requested from peer station as it is leaving the BSS */
@@ -1298,11 +1304,11 @@ wlan_cmd_mgmt_ie_list(IN pmlan_private pmpriv,
 /**
  *  @brief This function prepares system clock cfg command
  *
- *  @param pmpriv    	A pointer to mlan_private structure
- *  @param cmd	   	A pointer to HostCmd_DS_COMMAND structure
- *  @param cmd_action 	The action: GET or SET
- *  @param pdata_buf 	A pointer to data buffer
- *  @return 	   	MLAN_STATUS_SUCCESS
+ *  @param pmpriv       A pointer to mlan_private structure
+ *  @param cmd          A pointer to HostCmd_DS_COMMAND structure
+ *  @param cmd_action   The action: GET or SET
+ *  @param pdata_buf    A pointer to data buffer
+ *  @return             MLAN_STATUS_SUCCESS
  */
 static mlan_status
 wlan_cmd_sysclock_cfg(IN pmlan_private pmpriv,
@@ -1335,7 +1341,7 @@ wlan_cmd_sysclock_cfg(IN pmlan_private pmpriv,
 /**
  *  @brief This function prepares command of subscribe event.
  *
- *  @param pmpriv    	A pointer to mlan_private structure
+ *  @param pmpriv       A pointer to mlan_private structure
  *  @param cmd          A pointer to HostCmd_DS_COMMAND structure
  *  @param cmd_action   the action: GET or SET
  *  @param pdata_buf    A pointer to data buffer
@@ -1538,7 +1544,7 @@ done:
 /**
  *  @brief This function prepares command of OTP user data.
  *
- *  @param pmpriv    	A pointer to mlan_private structure
+ *  @param pmpriv       A pointer to mlan_private structure
  *  @param cmd          A pointer to HostCmd_DS_COMMAND structure
  *  @param cmd_action   the action: GET or SET
  *  @param pdata_buf    A pointer to data buffer
@@ -1708,7 +1714,8 @@ wlan_ops_sta_prepare_cmd(IN t_void * priv,
 		ret = wlan_cmd_802_11_associate(pmpriv, cmd_ptr, pdata_buf);
 		break;
 	case HostCmd_CMD_802_11_DEAUTHENTICATE:
-		ret = wlan_cmd_802_11_deauthenticate(pmpriv, cmd_ptr,
+	case HostCmd_CMD_802_11_DISASSOCIATE:
+		ret = wlan_cmd_802_11_deauthenticate(pmpriv, cmd_no, cmd_ptr,
 						     pdata_buf);
 		break;
 	case HostCmd_CMD_802_11_AD_HOC_START:

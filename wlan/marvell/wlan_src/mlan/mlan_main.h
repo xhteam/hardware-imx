@@ -41,11 +41,11 @@ extern t_u32 mlan_drvdbg;
 
 #ifdef	DEBUG_LEVEL2
 #define	PRINTM_MINFO(msg...)  do {if ((mlan_drvdbg & MINFO) && (print_callback)) \
-				  print_callback(MNULL, MINFO, msg); } while(0)
+				  print_callback(MNULL, MINFO, msg); } while (0)
 #define	PRINTM_MWARN(msg...)  do {if ((mlan_drvdbg & MWARN) && (print_callback)) \
-				  print_callback(MNULL, MWARN, msg); } while(0)
+				  print_callback(MNULL, MWARN, msg); } while (0)
 #define	PRINTM_MENTRY(msg...) do {if ((mlan_drvdbg & MENTRY) && (print_callback)) \
-				  print_callback(MNULL, MENTRY, msg); } while(0)
+				  print_callback(MNULL, MENTRY, msg); } while (0)
 #define PRINTM_GET_SYS_TIME(level, psec, pusec)              \
 do {                                                         \
 	if ((level & mlan_drvdbg) && (get_sys_time_callback))\
@@ -68,7 +68,7 @@ do {                \
 #define PRINTM_GET_SYS_TIME(level, psec, pusec)         \
 do {                                                    \
 	if ((level & mlan_drvdbg) && (get_sys_time_callback)     \
-	        && (level != MINFO) && (level != MWARN))    \
+			&& (level != MINFO) && (level != MWARN))    \
 	    get_sys_time_callback(MNULL, psec, pusec);      \
 } while (0)
 
@@ -78,30 +78,30 @@ do {                                                    \
 #endif /* DEBUG_LEVEL2 */
 
 #define	PRINTM_MFW_D(msg...)  do {if ((mlan_drvdbg & MFW_D) && (print_callback)) \
-				  print_callback(MNULL, MFW_D, msg); } while(0)
+				  print_callback(MNULL, MFW_D, msg); } while (0)
 #define	PRINTM_MCMD_D(msg...) do {if ((mlan_drvdbg & MCMD_D) && (print_callback)) \
-				  print_callback(MNULL, MCMD_D, msg); } while(0)
+				  print_callback(MNULL, MCMD_D, msg); } while (0)
 #define	PRINTM_MDAT_D(msg...) do {if ((mlan_drvdbg & MDAT_D) && (print_callback)) \
-				  print_callback(MNULL, MDAT_D, msg); } while(0)
+				  print_callback(MNULL, MDAT_D, msg); } while (0)
 #define	PRINTM_MIF_D(msg...) do {if ((mlan_drvdbg & MIF_D) && (print_callback)) \
-				  print_callback(MNULL, MIF_D, msg); } while(0)
+				  print_callback(MNULL, MIF_D, msg); } while (0)
 
 #define	PRINTM_MIOCTL(msg...) do {if ((mlan_drvdbg & MIOCTL) && (print_callback)) \
-				  print_callback(MNULL, MIOCTL, msg); } while(0)
+				  print_callback(MNULL, MIOCTL, msg); } while (0)
 #define	PRINTM_MINTR(msg...)  do {if ((mlan_drvdbg & MINTR) && (print_callback)) \
-				  print_callback(MNULL, MINTR, msg); } while(0)
+				  print_callback(MNULL, MINTR, msg); } while (0)
 #define	PRINTM_MEVENT(msg...) do {if ((mlan_drvdbg & MEVENT) && (print_callback)) \
-				  print_callback(MNULL, MEVENT, msg); } while(0)
+				  print_callback(MNULL, MEVENT, msg); } while (0)
 #define	PRINTM_MCMND(msg...)  do {if ((mlan_drvdbg & MCMND) && (print_callback)) \
-				  print_callback(MNULL, MCMND, msg); } while(0)
+				  print_callback(MNULL, MCMND, msg); } while (0)
 #define	PRINTM_MDATA(msg...)  do {if ((mlan_drvdbg & MDATA) && (print_callback)) \
-				  print_callback(MNULL, MDATA, msg); } while(0)
+				  print_callback(MNULL, MDATA, msg); } while (0)
 #define	PRINTM_MERROR(msg...) do {if ((mlan_drvdbg & MERROR) && (print_callback)) \
-				  print_callback(MNULL, MERROR, msg); } while(0)
+				  print_callback(MNULL, MERROR, msg); } while (0)
 #define	PRINTM_MFATAL(msg...) do {if ((mlan_drvdbg & MFATAL) && (print_callback)) \
-				  print_callback(MNULL, MFATAL, msg); } while(0)
+				  print_callback(MNULL, MFATAL, msg); } while (0)
 #define	PRINTM_MMSG(msg...)   do {if ((mlan_drvdbg & MMSG) && (print_callback)) \
-				  print_callback(MNULL, MMSG, msg); } while(0)
+				  print_callback(MNULL, MMSG, msg); } while (0)
 
 #define	PRINTM(level, msg...) PRINTM_##level((char *)msg)
 
@@ -110,7 +110,7 @@ do {                                                    \
 #define PRINTM_NETINTF(level, pmpriv)   \
 do {                                    \
 	if ((mlan_drvdbg & level) && pmpriv      \
-	        && pmpriv->adapter->callbacks.moal_print_netintf) \
+			&& pmpriv->adapter->callbacks.moal_print_netintf) \
 	    pmpriv->adapter->callbacks.moal_print_netintf( \
 		    pmpriv->adapter->pmoal_handle, \
 		    pmpriv->bss_index, level); \
@@ -139,20 +139,20 @@ do {                \
 /** Hexdump for debugging */
 #define HEXDUMP(x, y, z) do {} while (0)
 
-#define PRINTM_GET_SYS_TIME(level, psec, pusec) do { } while(0)
+#define PRINTM_GET_SYS_TIME(level, psec, pusec) do { } while (0)
 
 #endif /* DEBUG_LEVEL1 */
 
 /** Log entry point for debugging */
 #define ENTER()     \
 do {                \
-	PRINTM(MENTRY, "Enter: %s\n", __FUNCTION__);   \
+	PRINTM(MENTRY, "Enter: %s\n", __func__);   \
 } while (0)
 
 /** Log exit point for debugging */
 #define LEAVE()     \
 do {                \
-	PRINTM(MENTRY, "Leave: %s\n", __FUNCTION__);   \
+	PRINTM(MENTRY, "Leave: %s\n", __func__);   \
 } while (0)
 
 /** Find minimum */
@@ -228,7 +228,7 @@ do {                \
 	     (t_u64)(((t_u64)(x) & 0x000000ff00000000ULL) >>  8) | \
 	     (t_u64)(((t_u64)(x) & 0x0000ff0000000000ULL) >> 24) | \
 	     (t_u64)(((t_u64)(x) & 0x00ff000000000000ULL) >> 40) | \
-	     (t_u64)(((t_u64)(x) & 0xff00000000000000ULL) >> 56) ))
+	     (t_u64)(((t_u64)(x) & 0xff00000000000000ULL) >> 56)))
 
 #ifdef BIG_ENDIAN_SUPPORT
 /** Convert ulong n/w to host */
@@ -304,14 +304,14 @@ extern t_void(*assert_callback) (IN t_void * pmoal_handle, IN t_u32 cond);
 #define MASSERT(cond)                   \
 do {                                    \
 	if (!(cond)) {                      \
-	    PRINTM(MFATAL, "ASSERT: %s: %i\n", __FUNCTION__, __LINE__); \
+	    PRINTM(MFATAL, "ASSERT: %s: %i\n", __func__, __LINE__); \
 	    if (assert_callback) {          \
-	        assert_callback(MNULL, (t_ptr)(cond)); \
+			assert_callback(MNULL, (t_ptr)(cond)); \
 	    } else {                        \
-	        do {} while(1);             \
+			do {} while (1);             \
 	    }                               \
 	}                                   \
-} while(0)
+} while (0)
 
 /** Upload size */
 #define WLAN_UPLD_SIZE                  (2312)
@@ -321,7 +321,7 @@ do {                                    \
 
 #ifdef STA_SUPPORT
 /** Maximum buffer size for ARP filter */
-#define ARP_FILTER_MAX_BUF_SIZE     	68
+#define ARP_FILTER_MAX_BUF_SIZE         68
 #endif /* STA_SUPPORT */
 
 /** 60 seconds */
@@ -408,13 +408,19 @@ do {                                    \
  */
 #define SCAN_BEACON_ENTRY_PAD          6
 
-/** Scan time specified in the channel TLV for each channel for passive scans */
+/** Scan time specified in the channel TLV
+ *  for each channel for passive scans
+ */
 #define MRVDRV_PASSIVE_SCAN_CHAN_TIME       200
 
-/** Scan time specified in the channel TLV for each channel for active scans */
+/** Scan time specified in the channel TLV
+ *  for each channel for active scans
+ */
 #define MRVDRV_ACTIVE_SCAN_CHAN_TIME        200
 
-/** Scan time specified in the channel TLV for each channel for specific scans */
+/** Scan time specified in the channel TLV
+ *  for each channel for specific scans
+ */
 #define MRVDRV_SPECIFIC_SCAN_CHAN_TIME      110
 
 /**
@@ -433,8 +439,8 @@ do {                                    \
 
 /** Is cmd_resp, event or data packet received? */
 #define IS_CARD_RX_RCVD(adapter) (adapter->cmd_resp_received || \
-	                          adapter->event_received || \
-	                          adapter->data_received)
+								adapter->event_received || \
+								adapter->data_received)
 /** Type command */
 #define MLAN_TYPE_CMD			1
 /** Type data */
@@ -446,8 +452,6 @@ do {                                    \
 #define MAX_MP_REGS			64
 /** Maximum port */
 #define MAX_PORT			16
-/** Multi port aggregation packet limit */
-#define SDIO_MP_AGGR_DEF_PKT_LIMIT       (8)
 
 #ifdef SDIO_MULTI_PORT_TX_AGGR
 /** Multi port TX aggregation buffer size */
@@ -562,6 +566,9 @@ typedef enum _PS_STATE {
 
 /** Minimum flush timer for win size of 1 is 50 ms */
 #define MIN_FLUSH_TIMER_MS 50
+/** Minimum flush timer for win size of 1 is 15 ms */
+#define MIN_FLUSH_TIMER_15_MS 15
+
 /** Tx BA stream table */
 typedef struct _TxBAStreamTbl TxBAStreamTbl;
 
@@ -644,6 +651,8 @@ typedef struct _wmm_desc {
 	t_u32 packets_out[MAX_NUM_TID];
     /** Packets queued */
 	t_u32 pkts_queued[MAX_NUM_TID];
+    /** Packets paused */
+	t_u32 pkts_paused[MAX_NUM_TID];
     /** Spin lock to protect ra_list */
 	t_void *ra_list_spinlock;
 
@@ -684,6 +693,8 @@ typedef struct _wlan_802_11_security_t {
 	t_u32 authentication_mode;
     /** Encryption mode */
 	t_u32 encryption_mode;
+    /** Hotspot OSEN enabled */
+	t_u8 osen_enabled;
 } wlan_802_11_security_t;
 
 /** Current Basic Service Set State Structure */
@@ -1031,6 +1042,10 @@ typedef struct _mlan_private {
 	t_u8 wapi_ie[256];
     /** WAPI IE length */
 	t_u8 wapi_ie_len;
+    /** OSEN IE */
+	t_u8 osen_ie[256];
+    /** OSEN IE length */
+	t_u8 osen_ie_len;
     /** Pointer to the station table */
 	mlan_list_head sta_list;
 
@@ -1312,7 +1327,9 @@ typedef struct {
 	t_bool dfs_radar_found;
     /** Channel radar is being checked on.  BAND_A is assumed. */
 	t_u8 dfs_check_channel;
-    /** Timestamp when we got last report, to determine if data is old or not. */
+    /** Timestamp when we got last report,
+     * to determine if data is old or not.
+     */
 	t_u32 dfs_report_time_sec;
     /** List for holding dfs_timestamps for NOP/CAC events */
 	mlan_list_head dfs_ts_head;
@@ -1408,6 +1425,8 @@ typedef struct _sdio_mpa_tx {
 	t_u32 buf_size;
 	/** multiport tx aggregation pkt aggr limit */
 	t_u32 pkt_aggr_limit;
+    /** multiport write info */
+	t_u16 mp_wr_info[SDIO_MP_AGGR_DEF_PKT_LIMIT];
 } sdio_mpa_tx;
 #endif
 
@@ -1500,6 +1519,8 @@ typedef struct _mlan_adapter {
 	t_u32 mlan_rx_processing;
     /** rx_proc_lock for main_rx_process */
 	t_void *prx_proc_lock;
+    /** rx work enable flag */
+	t_u8 rx_work_flag;
 	/* number of rx pkts queued */
 	mlan_scalar rx_pkts_queued;
     /** more task flag */
@@ -1547,6 +1568,8 @@ typedef struct _mlan_adapter {
 	t_u8 curr_rd_port;
     /** Current available port for write */
 	t_u8 curr_wr_port;
+    /** last SDIO multiple port group registers */
+	t_u8 last_mp_regs[MAX_MP_REGS];
     /** Array to store values of SDIO multiple port group registers */
 	t_u8 *mp_regs;
     /** allocated buf to read SDIO multiple port group registers */
@@ -1555,11 +1578,33 @@ typedef struct _mlan_adapter {
 #ifdef SDIO_MULTI_PORT_TX_AGGR
 	/** data structure for SDIO MPA TX */
 	sdio_mpa_tx mpa_tx;
+    /** packet number for tx aggr */
+	t_u32 mpa_tx_count[SDIO_MP_AGGR_DEF_PKT_LIMIT];
+    /** no more packets count*/
+	t_u32 mpa_sent_last_pkt;
+    /** no write_ports count */
+	t_u32 mpa_sent_no_ports;
+    /** last wr_bitmap from FW */
+	t_u32 last_recv_wr_bitmap;
+    /** last mp_wr_bitmap */
+	t_u32 last_mp_wr_bitmap[SDIO_MP_DBG_NUM];
+    /** last ports for cmd53 write data */
+	t_u32 last_mp_wr_ports[SDIO_MP_DBG_NUM];
+    /** last length for cmd53 write data */
+	t_u32 last_mp_wr_len[SDIO_MP_DBG_NUM];
+    /** length info for cmd53 write data */
+	t_u16 last_mp_wr_info[SDIO_MP_DBG_NUM * SDIO_MP_AGGR_DEF_PKT_LIMIT];
+    /** last curr_wr_port */
+	t_u8 last_curr_wr_port[SDIO_MP_DBG_NUM];
+    /** last mp_index */
+	t_u8 last_mp_index;
 #endif				/* SDIO_MULTI_PORT_TX_AGGR */
 
 #ifdef SDIO_MULTI_PORT_RX_AGGR
 	/** data structure for SDIO MPA RX */
 	sdio_mpa_rx mpa_rx;
+    /** packet number for tx aggr */
+	t_u32 mpa_rx_count[SDIO_MP_AGGR_DEF_PKT_LIMIT];
 #endif				/* SDIO_MULTI_PORT_RX_AGGR */
 
     /** SDIO interrupt mode (0: INT_MODE_SDIO, 1: INT_MODE_GPIO) */
@@ -1619,6 +1664,8 @@ typedef struct _mlan_adapter {
 	t_void *pmlan_cmd_timer;
     /** Command timer set flag */
 	t_u8 cmd_timer_is_set;
+    /** time stamp for command dnld */
+	t_u32 dnld_cmd_in_secs;
 
     /** Command Queues */
     /** Free command buffers */
@@ -1827,9 +1874,9 @@ typedef struct _mlan_adapter {
 /** Ethernet packet type for EAPOL */
 #define MLAN_ETHER_PKT_TYPE_EAPOL	(0x888E)
 /** Ethernet packet type for WAPI */
-#define MLAN_ETHER_PKT_TYPE_WAPI 	(0x88B4)
+#define MLAN_ETHER_PKT_TYPE_WAPI	(0x88B4)
 /** Ethernet packet type offset */
-#define MLAN_ETHER_PKT_TYPE_OFFSET  (12)
+#define MLAN_ETHER_PKT_TYPE_OFFSET	(12)
 
 mlan_status wlan_init_lock_list(IN pmlan_adapter pmadapter);
 t_void wlan_free_lock_list(IN pmlan_adapter pmadapter);
@@ -1870,7 +1917,7 @@ mlan_status wlan_prepare_cmd(IN pmlan_private priv,
 			     IN t_void * pioctl_buf, IN t_void * pdata_buf);
 
 /** cmd timeout handler */
-t_void wlan_cmd_timeout_func(t_void * FunctionContext);
+t_void wlan_cmd_timeout_func(t_void * function_context);
 /** process host cmd */
 mlan_status wlan_misc_ioctl_host_cmd(IN pmlan_adapter pmadapter,
 				     IN pmlan_ioctl_req pioctl_req);
@@ -2042,6 +2089,15 @@ mlan_status wlan_cmd_remain_on_channel(IN pmlan_private pmpriv,
 mlan_status wlan_ret_remain_on_channel(IN pmlan_private pmpriv,
 				       IN HostCmd_DS_COMMAND * resp,
 				       IN mlan_ioctl_req * pioctl_buf);
+mlan_status wlan_cmd_p2p_params_config(IN pmlan_private pmpriv,
+				       IN HostCmd_DS_COMMAND * cmd,
+				       IN t_u16 cmd_action,
+				       IN t_void * pdata_buf);
+mlan_status wlan_ret_p2p_params_config(IN pmlan_private pmpriv,
+				       IN HostCmd_DS_COMMAND * resp,
+				       IN mlan_ioctl_req * pioctl_buf);
+mlan_status wlan_misc_p2p_config(IN pmlan_adapter pmadapter,
+				 IN pmlan_ioctl_req pioctl_req);
 #endif
 
 /** get pm info */
@@ -2402,7 +2458,7 @@ t_u8 wlan_is_wmm_ie_present(pmlan_adapter pmadapter, t_u8 * pbuf,
  *  @param priv     A pointer to mlan_private
  *  @param ra       Address of the receiver STA
  *
- *  @return 	    MTRUE or MFALSE
+ *  @return         MTRUE or MFALSE
  */
 static int INLINE
 wlan_is_tx_pause(mlan_private * priv, t_u8 * ra)
@@ -2515,9 +2571,9 @@ mlan_status wlan_misc_ioctl_txcontrol(IN pmlan_adapter pmadapter,
 /**
  *  @brief RA based queueing
  *
- *  @param priv                 A pointer to mlan_private structure
+ *  @param priv             A pointer to mlan_private structure
  *
- *  @return 	   	        MTRUE or MFALSE
+ *  @return                 MTRUE or MFALSE
  */
 static INLINE t_u8
 queuing_ra_based(pmlan_private priv)
@@ -2536,12 +2592,12 @@ queuing_ra_based(pmlan_private priv)
 /**
  *  @brief Copy Rates
  *
- *  @param dest                 A pointer to Dest Buf
+ *  @param dest             A pointer to Dest Buf
  *  @param pos		        The position for copy
  *  @param src		        A pointer to Src Buf
- *  @param len                  The len of Src Buf
+ *  @param len              The len of Src Buf
  *
- *  @return 	   	        Number of Rates copied
+ *  @return                 Number of Rates copied
  */
 static INLINE t_u32
 wlan_copy_rates(t_u8 * dest, t_u32 pos, t_u8 * src, int len)
@@ -2562,7 +2618,7 @@ wlan_copy_rates(t_u8 * dest, t_u32 pos, t_u8 * src, int len)
  *
  *  @param str		        A pointer to string
  *
- *  @return 	   	        Length of string
+ *  @return                 Length of string
  */
 static INLINE t_u32
 wlan_strlen(const char *str)
@@ -2619,10 +2675,11 @@ t_void wlan_delay_func(mlan_adapter * pmadapter, t_u32 delay, t_delay_unit u);
 #define wlan_udelay(p, n)  wlan_delay_func(p, n, USEC)
 
 /** Function to check if any command is pending in the queue */
-#define IS_COMMAND_PENDING(pmadapter) ((cmd_ctrl_node *)util_peek_list(pmadapter->pmoal_handle, \
-	                                   &pmadapter->cmd_pending_q,\
-	                                   pmadapter->callbacks.moal_spin_lock,\
-	                                   pmadapter->callbacks.moal_spin_unlock))
+#define IS_COMMAND_PENDING(pmadapter) \
+			((cmd_ctrl_node *)util_peek_list(pmadapter->pmoal_handle, \
+			&pmadapter->cmd_pending_q,\
+			pmadapter->callbacks.moal_spin_lock,\
+			pmadapter->callbacks.moal_spin_unlock))
 
 /** Get BSS number from priv */
 #define GET_BSS_NUM(priv)   ((priv)->bss_num)
@@ -2781,9 +2838,8 @@ wlan_get_privs_by_cond(mlan_adapter * pmadapter,
 	for (i = 0; i < pmadapter->priv_num; i++) {
 		pmpriv = pmadapter->priv[i];
 		if (pmpriv) {
-			if (check_cond(pmpriv)) {
+			if (check_cond(pmpriv))
 				ppriv_list[count++] = pmpriv;
-			}
 		}
 	}
 
@@ -2828,13 +2884,11 @@ wlan_get_privs_by_two_cond(mlan_adapter * pmadapter,
 		pmpriv = pmadapter->priv[i];
 		if (pmpriv) {
 			if (and_conditions) {
-				if (check_cond(pmpriv) && check_cond_2(pmpriv)) {
+				if (check_cond(pmpriv) && check_cond_2(pmpriv))
 					ppriv_list[count++] = pmpriv;
-				}
 			} else {
-				if (check_cond(pmpriv) || check_cond_2(pmpriv)) {
+				if (check_cond(pmpriv) || check_cond_2(pmpriv))
 					ppriv_list[count++] = pmpriv;
-				}
 			}
 		}
 	}

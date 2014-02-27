@@ -6830,3 +6830,169 @@ apcmd_sys_cfg_wmm(int argc, char *argv[])
 		free(buffer);
 	return ret;
 }
+
+/**
+ *  @brief Show usage information for the sys_cfg_restrict_client_mode
+ *   command
+ *
+ *  $return         N/A
+ */
+void
+print_sys_cfg_restrict_client_mode_usage(void)
+{
+	printf("\nUsage : sys_cfg_restrict_client_mode [<ENABLE> [MODE_CONFIG]]\n");
+	printf("\nOptions:");
+	printf("\n        Bit 0: 1 – enable restricted client mode");
+	printf("\n               0 – disable restricted client mode");
+	printf("\n        Bits [1-7] : set to 0");
+	printf("\n        Bits [8:12]:");
+	printf("\n               Bit 8: B only Mode");
+	printf("\n               Bit 9: A only Mode");
+	printf("\n               Bit 10: G only Mode");
+	printf("\n               Bit 11: N only Mode");
+	printf("\n               Bit 12: AC only Mode");
+	printf("\n        Bits [13:15]: set to 0");
+	printf("\n");
+	printf("\n        Empty - Get current restricted client mode setting.\n");
+	return;
+}
+
+/**
+ *  @brief Creates a sys_cfg request to Set/Get restricted client mode
+ *  and sends to the driver
+ *
+ *   Usage: "sys_cfg_restrict_client_mode [<ENABLE> [MODE_CONFIG]]"
+ *           If arguments are provided, a 'set' is performed
+ *           else a 'get' is performed.
+ *
+ *  @param argc     Number of arguments
+ *  @param argv     Pointer to the arguments
+ *  @return         UAP_SUCCESS/UAP_FAILURE
+ */
+int
+apcmd_sys_cfg_restrict_client_mode(int argc, char *argv[])
+{
+	apcmdbuf_sys_configure *cmd_buf = NULL;
+	tlvbuf_restrict_client_mode *tlv = NULL;
+	t_u8 *buffer = NULL;
+	t_u16 cmd_len = 0;
+	t_u16 buf_len = MRVDRV_SIZE_OF_CMD_BUFFER;
+	int ret = UAP_SUCCESS;
+	int opt;
+
+	while ((opt = getopt_long(argc, argv, "+", cmd_options, NULL)) != -1) {
+		switch (opt) {
+		default:
+			print_sys_cfg_restrict_client_mode_usage();
+			return UAP_SUCCESS;
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	/* Check arguments */
+	if (argc &&
+	    is_input_valid(RESTRICT_CLIENT_MODE, argc, argv) != UAP_SUCCESS) {
+		print_sys_cfg_restrict_client_mode_usage();
+		return UAP_FAILURE;
+	}
+
+	/* Initialize the command buffer */
+	buffer = (t_u8 *) malloc(buf_len);
+	if (!buffer) {
+		printf("ERR:Cannot allocate buffer for command!\n");
+		return UAP_FAILURE;
+	}
+	memset(buffer, 0, buf_len);
+
+	/* Locate headers */
+	cmd_buf = (apcmdbuf_sys_configure *) buffer;
+	tlv = (tlvbuf_restrict_client_mode *) (buffer +
+					       sizeof(apcmdbuf_sys_configure));
+
+	/* Fill the command buffer */
+	cmd_buf->cmd_code = APCMD_SYS_CONFIGURE;
+	cmd_buf->seq_num = 0;
+	cmd_buf->result = 0;
+	tlv->tag = MRVL_RESTRICT_CLIENT_MODE_TLV_ID;
+	if (argc == 0) {
+		cmd_buf->action = ACTION_GET;
+		tlv->length = 0;
+	} else {
+		cmd_buf->action = ACTION_SET;
+		tlv->length = sizeof(t_u16);
+		tlv->mode_config =
+			(t_u16) ((tlv->
+				  mode_config |
+				  RESTRICT_CLIENT_MODE_ENABLE_MASK) &
+				 atoi(argv[0]));
+		if (argc == 2) {
+			tlv->mode_config |=
+				(t_u16) (A2HEXDECIMAL(argv[1]) << 8);
+		}
+		tlv->mode_config = uap_cpu_to_le16(tlv->mode_config);
+	}
+	cmd_buf->size =
+		sizeof(apcmdbuf_sys_configure) +
+		sizeof(tlvbuf_restrict_client_mode);
+	cmd_len =
+		sizeof(apcmdbuf_sys_configure) +
+		sizeof(tlvbuf_restrict_client_mode);
+	endian_convert_tlv_header_out(tlv);
+	/* Send the command */
+	ret = uap_ioctl((t_u8 *) cmd_buf, &cmd_len, buf_len);
+	endian_convert_tlv_header_in(tlv);
+	/* Process response */
+	if (ret == UAP_SUCCESS) {
+		/* Verify response */
+		if ((cmd_buf->cmd_code !=
+		     (APCMD_SYS_CONFIGURE | APCMD_RESP_CHECK)) ||
+		    (tlv->tag != MRVL_RESTRICT_CLIENT_MODE_TLV_ID)) {
+			printf("ERR:Corrupted response! cmd_code=%x, Tlv->tag=%x\n", cmd_buf->cmd_code, tlv->tag);
+			free(buffer);
+			return UAP_FAILURE;
+		}
+		/* Print response */
+		if (cmd_buf->result == CMD_SUCCESS) {
+			if (argc == 0) {
+				tlv->mode_config =
+					uap_le16_to_cpu(tlv->mode_config);
+				printf("Restricted Client Mode: %s\n",
+				       (tlv->
+					mode_config &
+					RESTRICT_CLIENT_MODE_ENABLE_MASK) ?
+				       "Enabled" : "Disabled");
+				if (tlv->
+				    mode_config &
+				    RESTRICT_CLIENT_MODE_ENABLE_MASK) {
+					printf("Current client mode : ");
+					if (tlv->mode_config & B_ONLY_MASK)
+						printf("B Only\n");
+					else if (tlv->mode_config & A_ONLY_MASK)
+						printf("A Only\n");
+					else if (tlv->mode_config & G_ONLY_MASK)
+						printf("G Only\n");
+					else if (tlv->mode_config & N_ONLY_MASK)
+						printf("N Only\n");
+					else if (tlv->
+						 mode_config & AC_ONLY_MASK)
+						printf("AC Only\n");
+				}
+			} else {
+				printf("Restricted client mode setting successful\n");
+			}
+		} else {
+			if (argc == 0) {
+				printf("ERR:Could not get restrict client mode setting!\n");
+			} else {
+				printf("ERR:Could not set restrict client mode setting!\n");
+			}
+			ret = UAP_FAILURE;
+		}
+	} else {
+		printf("ERR:Command sending failed!\n");
+	}
+	if (buffer)
+		free(buffer);
+	return ret;
+}

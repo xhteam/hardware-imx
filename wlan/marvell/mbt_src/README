@@ -42,6 +42,7 @@
 	  nfc_name=<NFC interface name>
 	  mbt_pm_keep_power=1|0 <PM keep power in suspend (default) | PM no power in suspend>
 	  req_fw_nowait=0|1 <use request_firmware API (default) | use request_firmware_nowait API>
+	  fw_crc_check=1|0 <enable FW download CRC check (default) | disable FW download CRC check>
 	  init_cfg=<init config (MAC addresses, registers etc.) file name>
 		e.g. copy bt_init_cfg.conf to firmware directory, init_cfg=mrvl/bt_init_cfg.conf
       bt_mac=xx:xx:xx:xx:xx:xx <override the MAC address (in hex)>

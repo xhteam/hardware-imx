@@ -91,7 +91,8 @@ EXTRA_CFLAGS += -DLINUX
 # make KERNELDIR=/usr/src/arm/<arch-bsp-path>
 # Alternatively KERNELDIR can be set in the environment.
 # Default value for KERNELDIR is set below.
-KERNELDIR ?= /usr/src/arm/linux-3.4.5-pxa988-jb42/kernel/kbuild-pxa988_defconfig
+KERNELDIR ?= /usr/src/arm/linux-3.4.39-pxa1088
+CROSS_COMPILE ?= /usr/local/arm-eabi-4.6/bin/arm-eabi-
 
 # CROSS_COMPILE specify the prefix used for all executables used
 # during compilation. Only gcc and related bin-utils executables
@@ -99,7 +100,11 @@ KERNELDIR ?= /usr/src/arm/linux-3.4.5-pxa988-jb42/kernel/kbuild-pxa988_defconfig
 # make CROSS_COMPILE=</usr/local/arm/4.1.1/bin/>arm-linux-
 # Alternatively CROSS_COMPILE can be set in the environment.
 # Default value for CROSS_COMPILE is set below.
-CROSS_COMPILE ?= /usr/local/arm-eabi-4.4.3/bin/arm-eabi-
+#if defined(BG2CT)
+CROSS_COMPILE ?= /usr/local/arm-eabi-4.6/bin/arm-eabi-
+#else
+CROSS_COMPILE ?= /usr/local/arm/4.1.1/bin/arm-linux-
+#endif
 
 # INSTALLDIR specify the path to install the kernel module after
 # succesful compilation.
@@ -120,7 +125,7 @@ ARCH ?= arm
 LD += -S
 
 SOURCE_DIR ?=$(PWD)
-BINDIR = ../bin_sd87xx
+BINDIR = ../bin_sd8787
 APPDIR= $(shell if test -d "mapp"; then echo mapp; fi)
 
 #############################################################################
@@ -419,7 +424,7 @@ build:		echo default
 	fi
 
 	cp -f mlan.$(MODEXT) $(BINDIR)/mlan$(DBG).$(MODEXT)
-	cp -f sd8xxx.$(MODEXT) $(BINDIR)/sd87xx$(DBG).$(MODEXT)
+	cp -f sd8xxx.$(MODEXT) $(BINDIR)/sd8787$(DBG).$(MODEXT)
 
 ifeq ($(CONFIG_STA_SUPPORT),y)
 	cp -f README $(BINDIR)

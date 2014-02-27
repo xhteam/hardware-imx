@@ -246,6 +246,7 @@ rdeeprom <offset> <byteCount>
 cfg_data <type> [*.conf]
 sys_cfg_80211d [state STATE] [country COUNTRY]
 uap_stats
+sys_cfg_restrict_client_mode [<ENABLE> [MODE_CONFIG]]
 
 -------------------
 Details of Commands
@@ -1967,6 +1968,36 @@ mgmtframectrl
     Example:
     ./uaputl.exe mgmtframectrl 0x101
     Set management frame control mask to 0x101.
+
+restrict_client_mode
+--------------------
+	"./uaputl.exe restrict_client_mode [<ENABLE> [MODE_CONFIG]]"
+
+	This command is used to set/get the mode in which the ex-Stations can connect to the uAP.
+	If no arguments are given, this command returns the current configuration.
+	By default this feature will be disabled.
+	[ENABLE]:
+		1: Enable the feature.
+		0: Disable the feature.
+	[MODE_CONFIG]: config mode.
+		Bit 0:	B only Mode.
+		Bit 1:	A only Mode.
+		Bit 2:	G only Mode.
+		Bit 3:	N only Mode.
+		Bit 4:	AC only Mode.
+
+	Example:
+	./uaputl.exe restrict_client_mode 1 0x8.
+	Only N mode clients will be able to connect. Association will fail for other clients.
+
+	./uaputl.exe restrict_client_mode 0.
+	This feature is disabled.
+
+	Note:
+	The set operation should be performed before bss is started.
+	User should make sure that the mode advertized by uAP in beacons
+	(i.e. combination of supported/extended rates IE and capability IEs)
+	is superset of the mode allowed for ex-STA associations using this TLV.
 
 ===============================================================================
         U S E R  M A N U A L  F O R  MLANEVENT

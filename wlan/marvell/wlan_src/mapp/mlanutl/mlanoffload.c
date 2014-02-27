@@ -28,7 +28,7 @@ Change log:
 #include    "mlanoffload.h"
 
 /********************************************************
-                Local Variables
+				Local Variables
 ********************************************************/
 
 typedef struct {
@@ -41,11 +41,11 @@ typedef struct {
 t_void hexdump(char *prompt, t_void * p, t_s32 len, t_s8 delim);
 
 /********************************************************
-                Global Variables
+				Global Variables
 ********************************************************/
 
 /********************************************************
-                Local Functions
+				Local Functions
 ********************************************************/
 
 /**
@@ -920,7 +920,7 @@ chanrpt_graph_loop(boolean loopOnLoad, boolean loopOnAnpi, int loops)
 }
 
 /********************************************************
-                Global Functions
+				Global Functions
 ********************************************************/
 
 /**
@@ -1968,125 +1968,6 @@ process_iapp(int argc, char *argv[])
 	printf("IappData: ");
 	hexdump(NULL, pIappProxy->iappData, pIappProxy->iappDataLen, ' ');
 	printf("\n\n");
-
-done:
-	if (buffer)
-		free(buffer);
-	if (cmd)
-		free(cmd);
-	return ret;
-}
-
-/**
- *  @brief Issue a dscp map command
- *
- *  @param argc     number of arguments
- *  @param argv     A pointer to arguments array
- *
- *  @return         MLAN_STATUS_SUCCESS--success, otherwise--fail
- */
-int
-process_dscpmap(int argc, char *argv[])
-{
-	int ret = 0;
-	t_u8 *buffer = NULL;
-	struct eth_priv_cmd *cmd = NULL;
-	struct ifreq ifr;
-	unsigned int dscp, tid, idx;
-	t_u8 dscp_map[64];
-
-	buffer = (t_u8 *) malloc(BUFFER_LENGTH);
-	if (buffer == NULL) {
-		fprintf(stderr, "Cannot alloc memory\n");
-		ret = ENOMEM;
-		goto done;
-	}
-	memset(buffer, 0, BUFFER_LENGTH);
-
-	cmd = (struct eth_priv_cmd *)malloc(sizeof(struct eth_priv_cmd));
-	if (!cmd) {
-		printf("ERR:Cannot allocate buffer for command!\n");
-		ret = ENOMEM;
-		goto done;
-	}
-
-	/* buffer = MRVL_CMD<cmd> */
-	strncpy((char *)buffer, CMD_MARVELL, strlen(CMD_MARVELL));
-	strncpy((char *)buffer + strlen(CMD_MARVELL), argv[2], strlen(argv[2]));
-
-	/* Fill up buffer */
-	cmd->buf = buffer;
-	cmd->used_len = 0;
-	cmd->total_len = BUFFER_LENGTH;
-
-	/* Perform IOCTL */
-	memset(&ifr, 0, sizeof(struct ifreq));
-	strncpy(ifr.ifr_ifrn.ifrn_name, dev_name, strlen(dev_name));
-	ifr.ifr_ifru.ifru_data = (void *)cmd;
-
-	if (ioctl(sockfd, MLAN_ETH_PRIV, &ifr)) {
-		perror("ioctl[dscpmap]");
-		printf("ERR:Command sending failed!\n");
-		ret = -EFAULT;
-		goto done;
-	}
-	memcpy(dscp_map, buffer, sizeof(dscp_map));
-
-	if ((argc == 4) && (strcmp(argv[3], "reset") == 0)) {
-		memset(dscp_map, 0xff, sizeof(dscp_map));
-	} else if (argc == (3 + sizeof(dscp_map))) {
-		/* Update the entire dscp table */
-		for (idx = 3; idx < (3 + sizeof(dscp_map)); idx++) {
-			tid = a2hex_or_atoi(argv[idx]);
-
-			if ((tid >= 0) && (tid < 8)) {
-				dscp_map[idx - 3] = tid;
-			}
-		}
-	} else if (argc > 3 && argc <= (3 + sizeof(dscp_map))) {
-		/* Update any dscp entries provided on the command line */
-		for (idx = 3; idx < argc; idx++) {
-			if ((sscanf(argv[idx], "%x=%x", &dscp, &tid) == 2)
-			    && (dscp < sizeof(dscp_map))
-			    && (tid >= 0)
-			    && (tid < 8)) {
-				dscp_map[dscp] = tid;
-			}
-		}
-	} else if (argc != 3) {
-		printf("Invalid number of arguments\n");
-		ret = MLAN_STATUS_FAILURE;
-		goto done;
-	}
-
-	memset(buffer, 0, BUFFER_LENGTH);
-	/* buffer = MRVL_CMD<cmd> */
-	strncpy((char *)buffer, CMD_MARVELL, strlen(CMD_MARVELL));
-	strncpy((char *)buffer + strlen(CMD_MARVELL), argv[2], strlen(argv[2]));
-	if (argc > 3)
-		memcpy(buffer + strlen(CMD_MARVELL) + strlen(argv[2]),
-		       dscp_map, sizeof(dscp_map));
-	cmd->buf = buffer;
-	cmd->used_len = 0;
-	cmd->total_len = BUFFER_LENGTH;
-
-	/* Perform IOCTL */
-	memset(&ifr, 0, sizeof(struct ifreq));
-	strncpy(ifr.ifr_ifrn.ifrn_name, dev_name, strlen(dev_name));
-	ifr.ifr_ifru.ifru_data = (void *)cmd;
-
-	if (ioctl(sockfd, MLAN_ETH_PRIV, &ifr)) {
-		perror("ioctl[dscpmap]");
-		printf("ERR:Command sending failed!\n");
-		ret = -EFAULT;
-		goto done;
-	}
-
-	/* Display the active dscp -> TID mapping table */
-	if (cmd->used_len) {
-		printf("DscpMap:\n");
-		hexdump(NULL, buffer, cmd->used_len, ' ');
-	}
 
 done:
 	if (buffer)

@@ -34,7 +34,7 @@ Change log:
 #define IW_MAX_PRIV_NUM     1024
 
 /********************************************************
-        Local Variables
+			Local Variables
 ********************************************************/
 #define BAND_B       (1U << 0)
 #define BAND_G       (1U << 1)
@@ -215,6 +215,10 @@ static int process_bypassed_packet(int argc, char *argv[]);
 static int process_fw_wakeup_method(int argc, char *argv[]);
 /* #endif */
 static int process_sdcmd53rw(int argc, char *argv[]);
+#if defined(WIFI_DIRECT_SUPPORT)
+#if LINUX_VERSION_CODE >= WIFI_DIRECT_KERNEL_VERSION
+#endif
+#endif
 
 struct command_node command_list[] = {
 	{"version", process_version},
@@ -343,6 +347,10 @@ struct command_node command_list[] = {
 /* #endif */
 	{"sysclock", process_sysclock},
 	{"sdcmd53rw", process_sdcmd53rw},
+#if defined(WIFI_DIRECT_SUPPORT)
+#if LINUX_VERSION_CODE >= WIFI_DIRECT_KERNEL_VERSION
+#endif
+#endif
 };
 
 static char *usage[] = {
@@ -429,6 +437,10 @@ static char *usage[] = {
 	"         mpactrl",
 #endif
 #if defined(WIFI_DIRECT_SUPPORT)
+#if LINUX_VERSION_CODE >= WIFI_DIRECT_KERNEL_VERSION
+#endif
+#endif
+#if defined(WIFI_DIRECT_SUPPORT)
 	"         offchannel",
 #endif
 	"         passphrase",
@@ -485,11 +497,11 @@ char dev_name[IFNAMSIZ + 1];
 #define HOSTCMD "hostcmd"
 
 /********************************************************
-        Global Variables
+			Global Variables
 ********************************************************/
 
 /********************************************************
-        Local Functions
+			Local Functions
 ********************************************************/
 
 /**
@@ -889,6 +901,23 @@ read_line:
 }
 
 /**
+ *  @brief          Parse function for a configuration line
+ *
+ *  @param s        Storage buffer for data
+ *  @param size     Maximum size of data
+ *  @param stream   File stream pointer
+ *  @param line     Pointer to current line within the file
+ *  @param _pos     Output string or NULL
+ *  @return         String or NULL
+ */
+static char *
+config_get_line(char *s, int size, FILE * stream, int *line, char **_pos)
+{
+	*_pos = mlan_config_get_line(stream, s, size, line);
+	return *_pos;
+}
+
+/**
  *  @brief Converts colon separated MAC address to hex value
  *
  *  @param mac      A pointer to the colon separated MAC string
@@ -922,23 +951,6 @@ mac2raw(char *mac, t_u8 * raw)
 		return MAC_MULTICAST;
 	}
 	return MLAN_STATUS_SUCCESS;
-}
-
-/**
- *  @brief          Parse function for a configuration line
- *
- *  @param s        Storage buffer for data
- *  @param size     Maximum size of data
- *  @param stream   File stream pointer
- *  @param line     Pointer to current line within the file
- *  @param _pos     Output string or NULL
- *  @return         String or NULL
- */
-static char *
-config_get_line(char *s, int size, FILE * stream, int *line, char **_pos)
-{
-	*_pos = mlan_config_get_line(stream, s, size, line);
-	return *_pos;
 }
 
 /**
@@ -1832,6 +1844,37 @@ process_host_cmd_resp(char *cmd_name, t_u8 * buf)
 }
 
 /**
+ *  @brief Trims leading and traling spaces only
+ *  @param str  A pointer to argument string
+ *  @return     pointer to trimmed string
+ */
+char *
+trim_spaces(char *str)
+{
+	char *str_end = NULL;
+
+	if (!str)
+		return NULL;
+
+	/* Trim leading spaces */
+	while (!*str && isspace(*str))
+		str++;
+
+	if (*str == 0)		/* All spaces? */
+		return str;
+
+	/* Trim trailing spaces */
+	str_end = str + strlen(str) - 1;
+	while (str_end > str && isspace(*str_end))
+		str_end--;
+
+	/* null terminate the string */
+	*(str_end + 1) = '\0';
+
+	return str;
+}
+
+/**
  *  @brief Process hostcmd command
  *  @param argc   Number of arguments
  *  @param argv   A pointer to arguments array
@@ -1840,82 +1883,225 @@ process_host_cmd_resp(char *cmd_name, t_u8 * buf)
 static int
 process_hostcmd(int argc, char *argv[])
 {
-	t_u8 *buffer = NULL;
+	t_u8 *buffer = NULL, *raw_buf = NULL;
 	struct eth_priv_cmd *cmd = NULL;
 	struct ifreq ifr;
 	FILE *fp = NULL;
+	FILE *fp_raw = NULL;
 	char cmdname[256];
+	boolean call_ioctl = TRUE;
+	t_u32 buf_len = 0, i, j, k;
+	char *line = NULL, *pos = NULL;
+	int li = 0, blk_count = 0, ob = 0;
+	int ret = MLAN_STATUS_SUCCESS;
+
+	struct cmd_node {
+		char cmd_string[256];
+		struct cmd_node *next;
+	};
+	struct cmd_node *command = NULL, *header = NULL, *new_node = NULL;
 
 	if (argc < 5) {
 		printf("Error: invalid no of arguments\n");
 		printf("Syntax: ./mlanutl mlanX hostcmd <hostcmd.conf> <cmdname>\n");
-		return MLAN_STATUS_FAILURE;
+		ret = MLAN_STATUS_FAILURE;
+		goto done;
+	}
+
+	snprintf(cmdname, sizeof(cmdname), "%s", argv[4]);
+
+	if (!strcmp(cmdname, "generate_raw")) {
+		call_ioctl = FALSE;
+	}
+
+	if (!call_ioctl && argc != 6) {
+		printf("Error: invalid no of arguments\n");
+		printf("Syntax: ./mlanutl mlanX hostcmd <hostcmd.conf> %s <raw_data_file>\n", cmdname);
+		ret = MLAN_STATUS_FAILURE;
+		goto done;
 	}
 
 	fp = fopen(argv[3], "r");
 	if (fp == NULL) {
 		fprintf(stderr, "Cannot open file %s\n", argv[3]);
-		return MLAN_STATUS_FAILURE;
+		ret = MLAN_STATUS_FAILURE;
+		goto done;
 	}
-
-	snprintf(cmdname, sizeof(cmdname), "%s", argv[4]);
 
 	/* Initialize buffer */
 	buffer = (t_u8 *) malloc(BUFFER_LENGTH);
 	if (!buffer) {
 		printf("ERR:Cannot allocate buffer for command!\n");
-		return MLAN_STATUS_FAILURE;
+		ret = MLAN_STATUS_FAILURE;
+		goto done;
 	}
+	memset(buffer, 0, BUFFER_LENGTH);
 
-	/* Prepare the hostcmd buffer */
-	prepare_buffer(buffer, argv[2], 0, NULL);
-	if (MLAN_STATUS_FAILURE ==
-	    prepare_host_cmd_buffer(fp, cmdname,
-				    buffer + strlen(CMD_MARVELL) +
-				    strlen(argv[2]))) {
+	if (call_ioctl) {
+		/* Prepare the hostcmd buffer */
+		prepare_buffer(buffer, argv[2], 0, NULL);
+		if (MLAN_STATUS_FAILURE ==
+		    prepare_host_cmd_buffer(fp, cmdname,
+					    buffer + strlen(CMD_MARVELL) +
+					    strlen(argv[2]))) {
+			fclose(fp);
+			ret = MLAN_STATUS_FAILURE;
+			goto done;
+		}
 		fclose(fp);
-		if (buffer)
-			free(buffer);
-		return MLAN_STATUS_FAILURE;
+	} else {
+		line = (char *)malloc(MAX_CONFIG_LINE);
+		if (!line) {
+			printf("ERR:Cannot allocate memory for line\n");
+			fclose(fp);
+			ret = MLAN_STATUS_FAILURE;
+			goto done;
+		}
+		memset(line, 0, MAX_CONFIG_LINE);
+
+		while (config_get_line(line, MAX_CONFIG_LINE, fp, &li, &pos)) {
+			line = trim_spaces(line);
+			if (line[strlen(line) - 1] == '{') {
+				if (ob == 0) {
+					new_node =
+						(struct cmd_node *)
+						malloc(sizeof(struct cmd_node));
+					if (!new_node) {
+						printf("ERR:Cannot allocate memory for cmd_node\n");
+						fclose(fp);
+						ret = MLAN_STATUS_FAILURE;
+						goto done;
+					}
+					memset(new_node, 0,
+					       sizeof(struct cmd_node));
+					new_node->next = NULL;
+					if (blk_count == 0) {
+						header = new_node;
+						command = new_node;
+					} else {
+						command->next = new_node;
+						command = new_node;
+					}
+					strncpy(command->cmd_string, line,
+						(strchr(line, '=') - line));
+					memmove(command->cmd_string,
+						trim_spaces(command->
+							    cmd_string),
+						strlen(trim_spaces
+						       (command->cmd_string)) +
+						1);
+				}
+				ob++;
+				continue;	/* goto while() */
+			}
+			if (line[strlen(line) - 1] == '}') {
+				ob--;
+				if (ob == 0)
+					blk_count++;
+				continue;	/* goto while() */
+			}
+		}
+
+		rewind(fp);	/* Set the source file pointer to the beginning
+				   again */
+		command = header;	/* Set 'command' at the beginning of
+					   the command list */
+
+		fp_raw = fopen(argv[5], "w");
+		if (fp_raw == NULL) {
+			fprintf(stderr,
+				"Cannot open the destination raw_data file %s\n",
+				argv[5]);
+			fclose(fp);
+			ret = MLAN_STATUS_FAILURE;
+			goto done;
+		}
+
+		for (k = 0; k < blk_count && command != NULL; k++) {
+			if (MLAN_STATUS_FAILURE ==
+			    prepare_host_cmd_buffer(fp, command->cmd_string,
+						    buffer))
+				memset(buffer, 0, BUFFER_LENGTH);
+
+			memcpy(&buf_len, buffer, sizeof(t_u32));
+			if (buf_len) {
+				raw_buf = buffer + sizeof(t_u32);	/* raw_buf
+									   points
+									   to
+									   start
+									   of
+									   actual
+									   <raw
+									   data>
+									 */
+				printf("buf_len = %d\n", (int)buf_len);
+				if (k > 0)
+					fprintf(fp_raw, "\n\n");
+				fprintf(fp_raw, "%s={\n", command->cmd_string);
+				i = j = 0;
+				while (i < buf_len) {
+					for (j = 0; j < 16; j++) {
+						fprintf(fp_raw, "%02x ",
+							*(raw_buf + i));
+						if (++i >= buf_len)
+							break;
+					}
+					fputc('\n', fp_raw);
+				}
+				fprintf(fp_raw, "}");
+			}
+			command = command->next;
+			rewind(fp);
+		}
+
+		fclose(fp_raw);
+		fclose(fp);
 	}
-	fclose(fp);
 
-	cmd = (struct eth_priv_cmd *)malloc(sizeof(struct eth_priv_cmd));
-	if (!cmd) {
-		printf("ERR:Cannot allocate buffer for command!\n");
-		free(buffer);
-		return MLAN_STATUS_FAILURE;
+	if (call_ioctl) {
+		cmd = (struct eth_priv_cmd *)
+			malloc(sizeof(struct eth_priv_cmd));
+		if (!cmd) {
+			printf("ERR:Cannot allocate buffer for command!\n");
+			ret = MLAN_STATUS_FAILURE;
+			goto done;
+		}
+
+		/* Fill up buffer */
+		cmd->buf = buffer;
+		cmd->used_len = 0;
+		cmd->total_len = BUFFER_LENGTH;
+
+		/* Perform IOCTL */
+		memset(&ifr, 0, sizeof(struct ifreq));
+		strncpy(ifr.ifr_ifrn.ifrn_name, dev_name, strlen(dev_name));
+		ifr.ifr_ifru.ifru_data = (void *)cmd;
+
+		if (ioctl(sockfd, MLAN_ETH_PRIV, &ifr)) {
+			perror("mlanutl");
+			fprintf(stderr, "mlanutl: hostcmd fail\n");
+			ret = MLAN_STATUS_FAILURE;
+			goto done;
+		}
+
+		/* Process result */
+		process_host_cmd_resp(argv[2], cmd->buf);
 	}
 
-	/* Fill up buffer */
-	cmd->buf = buffer;
-	cmd->used_len = 0;
-	cmd->total_len = BUFFER_LENGTH;
-
-	/* Perform IOCTL */
-	memset(&ifr, 0, sizeof(struct ifreq));
-	strncpy(ifr.ifr_ifrn.ifrn_name, dev_name, strlen(dev_name));
-	ifr.ifr_ifru.ifru_data = (void *)cmd;
-
-	if (ioctl(sockfd, MLAN_ETH_PRIV, &ifr)) {
-		perror("mlanutl");
-		fprintf(stderr, "mlanutl: hostcmd fail\n");
-		if (cmd)
-			free(cmd);
-		if (buffer)
-			free(buffer);
-		return MLAN_STATUS_FAILURE;
+done:
+	while (header) {
+		command = header;
+		header = header->next;
+		free(command);
 	}
-
-	/* Process result */
-	process_host_cmd_resp(argv[2], cmd->buf);
-
+	if (line)
+		free(line);
 	if (buffer)
 		free(buffer);
 	if (cmd)
 		free(cmd);
 
-	return MLAN_STATUS_SUCCESS;
+	return ret;
 }
 
 /**
@@ -7651,7 +7837,7 @@ process_wmm_qstatus(int argc, char *argv[])
 	struct eth_priv_cmd *cmd = NULL;
 	struct ifreq ifr;
 	wlan_ioctl_wmm_queue_status_t qstatus;
-	int cmd_header_len = 0, ret = 0;
+	int ret = 0;
 	mlan_wmm_ac_e acVal;
 
 	if (argc != 3) {
@@ -7661,7 +7847,6 @@ process_wmm_qstatus(int argc, char *argv[])
 	}
 
 	memset(&qstatus, 0x00, sizeof(qstatus));
-	cmd_header_len = strlen(CMD_MARVELL) + strlen(argv[2]);
 
 	buffer = (t_u8 *) malloc(BUFFER_LENGTH);
 	if (buffer == NULL) {
@@ -9514,7 +9699,7 @@ done:
 	if (cmd)
 		free(cmd);
 
-	return MLAN_STATUS_SUCCESS;
+	return ret;
 }
 
 /**
@@ -9583,7 +9768,7 @@ done:
 	if (cmd)
 		free(cmd);
 
-	return MLAN_STATUS_SUCCESS;
+	return ret;
 }
 
 /**
@@ -9654,7 +9839,7 @@ done:
 	if (cmd)
 		free(cmd);
 
-	return MLAN_STATUS_SUCCESS;
+	return ret;
 }
 
 #if defined(SDIO_MULTI_PORT_TX_AGGR) || defined(SDIO_MULTI_PORT_RX_AGGR)
@@ -9732,7 +9917,7 @@ done:
 	if (cmd)
 		free(cmd);
 
-	return MLAN_STATUS_SUCCESS;
+	return ret;
 }
 #endif
 
@@ -10667,8 +10852,13 @@ done:
 	return ret;
 }
 
+#if defined(WIFI_DIRECT_SUPPORT)
+#if LINUX_VERSION_CODE >= WIFI_DIRECT_KERNEL_VERSION
+#endif
+#endif
+
 /********************************************************
-        Global Functions
+			Global Functions
 ********************************************************/
 
 /**

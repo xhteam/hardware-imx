@@ -38,6 +38,7 @@ Change log:
 #include    <linux/wireless.h>
 #include    <sys/types.h>
 #include    <sys/time.h>
+#include    <arpa/inet.h>
 
 /** Type definition: boolean */
 typedef enum { FALSE, TRUE } boolean;
@@ -77,9 +78,9 @@ typedef enum { FALSE, TRUE } boolean;
 
 /** TLV header */
 #define TLVHEADER       /** Tag */      \
-                        t_u16 tag;      \
-                        /** Length */   \
-                        t_u16 length
+						t_u16 tag;      \
+						/** Length */   \
+						t_u16 length
 
 /** Length of TLV header */
 #define TLVHEADER_LEN  4
@@ -1559,5 +1560,27 @@ typedef struct {
 } __ATTRIB_PACK__ HostCmd_DS_LINK_STATS_SUMMARY;
 
 #define HostCmd_CMD_LINK_STATS_SUMMARY    0x00d3
+
+#ifdef WIFI_DIRECT_SUPPORT
+/** Type definition of mlan_ds_wifi_direct_config for MLAN_OID_MISC_WIFI_DIRECT_CONFIG */
+typedef struct _mlan_ds_wifi_direct_config {
+    /** flags for NOA/OPP_PS */
+	t_u8 flags;
+     /** NoA enable/disable */
+	t_u8 noa_enable;
+    /** index */
+	t_u16 index;
+    /** NoA count */
+	t_u8 noa_count;
+    /** NoA duration */
+	t_u32 noa_duration;
+    /** NoA interval */
+	t_u32 noa_interval;
+    /** opp ps enable/disable */
+	t_u8 opp_ps_enable;
+    /** CT window value */
+	t_u8 ct_window;
+} mlan_ds_wifi_direct_config;
+#endif
 
 #endif /* _MLANUTL_H_ */

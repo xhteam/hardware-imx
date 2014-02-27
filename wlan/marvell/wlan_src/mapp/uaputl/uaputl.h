@@ -643,6 +643,7 @@ typedef enum {
 	COEX_ACL_WLAN_TIME,
 	PWK_CIPHER,
 	GWK_CIPHER,
+	RESTRICT_CLIENT_MODE,
 } valid_inputs;
 
 /** Message verbosity level */
@@ -720,10 +721,14 @@ typedef PACK_START struct _tlvbuf_header {
 #define SECOND_CHANNEL_BELOW    0x30
 /** secondary channel is above */
 #define SECOND_CHANNEL_ABOVE    0x10
-/** max primary channel support secondary channle above */
-#define MAX_CHANNEL_ABOVE       7
-/** min primary channel support secondary channle below */
+/** max primary channel support secondary channel above */
+#define MAX_CHANNEL_ABOVE       9
+/** Default max primary channel supporting secondary channel above when country code is not Japan */
+#define DEFAULT_MAX_CHANNEL_ABOVE       7
+/** min primary channel support secondary channel below */
 #define MIN_CHANNEL_BELOW       5
+/** Default max primary channel supporting secondary channel below when country code is not Japan */
+#define DEFAULT_MAX_CHANNEL_BELOW       11
 
 /** Band B */
 #define BAND_B          (0x01)
@@ -1922,6 +1927,8 @@ typedef PACK_START struct _apcmdbuf_cfg_data {
 #define MRVL_CIPHER_GWK_TLV_ID              (PROPRIETARY_TLV_BASE_ID + 0x92)	// 0x0192
 /** TLV : BSS Status */
 #define MRVL_BSS_STATUS_TLV_ID              (PROPRIETARY_TLV_BASE_ID + 0x93)	// 0x0193
+/** TLV : Restricted Client Mode */
+#define MRVL_RESTRICT_CLIENT_MODE_TLV_ID    (PROPRIETARY_TLV_BASE_ID + 0xC1)	// 0x01C1
 /** TLV : Sticky TIM config */
 #define MRVL_STICKY_TIM_CONFIG_TLV_ID       (PROPRIETARY_TLV_BASE_ID + 0x96)	// 0x0196
 /** TLV : Sticky TIM MAC address */
@@ -2003,6 +2010,19 @@ typedef PACK_START struct _tx_rate_cfg_t {
 /** Rate index for MCS 32 */
 #define UAP_RATE_INDEX_MCS32  44
 
+/* Mask to enable/disable restricted client mode */
+#define RESTRICT_CLIENT_MODE_ENABLE_MASK   0x01
+/* Mask for B Only mode */
+#define B_ONLY_MASK   0x0100
+/* Mask for A Only mode */
+#define A_ONLY_MASK   0x0200
+/* Mask for G Only mode */
+#define G_ONLY_MASK   0x0400
+/* Mask for N Only mode */
+#define N_ONLY_MASK   0x0800
+/* Mask for AC Only mode */
+#define AC_ONLY_MASK  0x1000
+
 /** Type enumeration of WMM AC_QUEUES */
 typedef enum _wmm_ac {
 	AC_BE,
@@ -2010,6 +2030,26 @@ typedef enum _wmm_ac {
 	AC_VI,
 	AC_VO,
 } wmm_ac;
+
+/** Restricted Client Mode tlv */
+typedef PACK_START struct _tlvbuf_restrict_client_mode {
+    /** Header */
+	TLVHEADER;
+    /** Mode Config
+     *  Bit 0: 1 – enable restricted client mode
+     *         0 – disable restricted client mode
+     *  Bits [1-7] : set to 0
+     *  Bits [8:12]
+     *         Bit 8: B only Mode
+     *         Bit 9: A only Mode
+     *         Bit 10: G only Mode
+     *         Bit 11: N only Mode
+     *         Bit 12: AC only Mode
+     *  Currently only one of the bits from [8-12] should be set
+     *  Bits [13:15]: set to 0
+     */
+	t_u16 mode_config;
+} PACK_END tlvbuf_restrict_client_mode;
 
 /** ID for VENDOR_SPECIFIC_IE */
 #define VENDOR_SPECIFIC_IE_TLV_ID   0xdd

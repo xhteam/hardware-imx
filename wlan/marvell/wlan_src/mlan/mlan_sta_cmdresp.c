@@ -46,6 +46,7 @@ Change log:
 /********************************************************
 			Local Functions
 ********************************************************/
+
 /**
  *  @brief This function handles the command response error
  *
@@ -407,12 +408,10 @@ wlan_get_power_level(pmlan_private pmpriv, void *pdata_buf)
 		}
 		while (length) {
 			pg++;
-			if (max_power < pg->power_max) {
+			if (max_power < pg->power_max)
 				max_power = pg->power_max;
-			}
-			if (min_power > pg->power_min) {
+			if (min_power > pg->power_min)
 				min_power = pg->power_min;
-			}
 			length -= sizeof(Power_Group_t);
 		}
 		if (ppg_tlv->length > 0) {
@@ -1569,6 +1568,7 @@ wlan_ops_sta_process_cmdresp(IN t_void * priv,
 		ret = wlan_ret_802_11_associate(pmpriv, resp, pioctl_buf);
 		break;
 	case HostCmd_CMD_802_11_DEAUTHENTICATE:
+	case HostCmd_CMD_802_11_DISASSOCIATE:
 		ret = wlan_ret_802_11_deauthenticate(pmpriv, resp, pioctl_buf);
 		break;
 	case HostCmd_CMD_802_11_AD_HOC_START:

@@ -745,7 +745,7 @@ print_wifi_wps_ie_elements(t_u8 * buffer, t_u16 size)
 				array_ptr = wps_tlv->data;
 				printf("\t WPS Model Number = ");
 				for (i = 0; i < wps_len; i++)
-					printf("%d", *array_ptr++);
+					printf("%c", *array_ptr++);
 				printf("\n");
 			}
 			break;
@@ -755,7 +755,7 @@ print_wifi_wps_ie_elements(t_u8 * buffer, t_u16 size)
 				array_ptr = wps_tlv->data;
 				printf("\t WPS Serial Number = ");
 				for (i = 0; i < wps_len; i++)
-					printf("%d", *array_ptr++);
+					printf("%c", *array_ptr++);
 				printf("\n");
 			}
 			break;
@@ -763,10 +763,27 @@ print_wifi_wps_ie_elements(t_u8 * buffer, t_u16 size)
 			{
 				tlvbuf_wps_ie *wps_tlv = (tlvbuf_wps_ie *) ptr;
 				array_ptr = wps_tlv->data;
-				printf("\t WPS 2.0 Vendor Extension");
+				printf("\t WPS 2.0 Vendor Extension = ");
 				for (i = 0; i < wps_len; i++)
-					printf("%d", *array_ptr++);
+					printf("%x", *array_ptr++);
 				printf("\n");
+			}
+			break;
+		case SC_Selected_Registrar:
+			{
+				tlvbuf_wps_ie *wps_tlv = (tlvbuf_wps_ie *) ptr;
+				printf("\t Selected Registrar = %d\n",
+				       *(wps_tlv->data));
+			}
+			break;
+		case SC_SelectedRegistrarConfigMethods:
+			{
+				t_u16 sr_config_methods = 0;
+				tlvbuf_wps_ie *wps_tlv = (tlvbuf_wps_ie *) ptr;
+				memcpy(&sr_config_methods, wps_tlv->data,
+				       sizeof(t_u16));
+				sr_config_methods = ntohs(sr_config_methods);
+				printf("\t Selected Registrar Configuration Methods = 0x%x\n", sr_config_methods);
 			}
 			break;
 		default:
@@ -1888,13 +1905,13 @@ print_event(event_header * event, t_u16 size)
 #endif
 
 	case UAP_EVENT_ID_DRV_HS_ACTIVATED:
-		printf("EVENT: HS_ACTIVATED\n");
+		printf("EVENT: uAP HS_ACTIVATED\n");
 		break;
 	case UAP_EVENT_ID_DRV_HS_DEACTIVATED:
-		printf("EVENT: HS_DEACTIVATED\n");
+		printf("EVENT: uAP HS_DEACTIVATED\n");
 		break;
 	case UAP_EVENT_ID_HS_WAKEUP:
-		printf("EVENT: HS_WAKEUP\n");
+		printf("EVENT: uAP HS_WAKEUP\n");
 		break;
 	case UAP_EVENT_HOST_SLEEP_AWAKE:
 		break;
@@ -1954,6 +1971,153 @@ print_event(event_header * event, t_u16 size)
 			print_mac((t_u8 *) event +
 				  strlen(CUS_EVT_AP_CONNECTED));
 			printf("\n");
+			break;
+		}
+#define CUS_EVT_ADHOC_LINK_SENSED   "EVENT=ADHOC_LINK_SENSED"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_ADHOC_LINK_SENSED,
+		     strlen(CUS_EVT_ADHOC_LINK_SENSED))) {
+			printf("EVENT: ADHOC_LINK_SENSED\n");
+			break;
+		}
+#define CUS_EVT_ADHOC_LINK_LOST     "EVENT=ADHOC_LINK_LOST"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_ADHOC_LINK_LOST,
+		     strlen(CUS_EVT_ADHOC_LINK_LOST))) {
+			printf("EVENT: ADHOC_LINK_LOST\n");
+			break;
+		}
+#define CUS_EVT_OBSS_SCAN_PARAM     "EVENT=OBSS_SCAN_PARAM"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_OBSS_SCAN_PARAM,
+		     strlen(CUS_EVT_OBSS_SCAN_PARAM))) {
+			printf("EVENT: OBSS_SCAN_PARAM\n");
+			break;
+		}
+#define CUS_EVT_BW_CHANGED      "EVENT=BW_CHANGED"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_BW_CHANGED,
+		     strlen(CUS_EVT_BW_CHANGED))) {
+			printf("EVENT: BW_CHANGED\n");
+			break;
+		}
+#define CUS_EVT_MLME_MIC_ERR_UNI    "MLME-MICHAELMICFAILURE.indication unicast"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_MLME_MIC_ERR_UNI,
+		     strlen(CUS_EVT_MLME_MIC_ERR_UNI))) {
+			printf("EVENT: MLME-MICHAELMICFAILURE.indication unicast\n");
+			break;
+		}
+#define CUS_EVT_MLME_MIC_ERR_MUL    "MLME-MICHAELMICFAILURE.indication multicast"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_MLME_MIC_ERR_MUL,
+		     strlen(CUS_EVT_MLME_MIC_ERR_MUL))) {
+			printf("EVENT: MLME-MICHAELMICFAILURE.indication multicast\n");
+			break;
+		}
+#define CUS_EVT_BEACON_RSSI_LOW     "EVENT=BEACON_RSSI_LOW"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_BEACON_RSSI_LOW,
+		     strlen(CUS_EVT_BEACON_RSSI_LOW))) {
+			printf("EVENT: BEACON_RSSI_LOW\n");
+			break;
+		}
+#define CUS_EVT_BEACON_RSSI_HIGH    "EVENT=BEACON_RSSI_HIGH"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_BEACON_RSSI_HIGH,
+		     strlen(CUS_EVT_BEACON_RSSI_HIGH))) {
+			printf("EVENT: BEACON_RSSI_HIGH\n");
+			break;
+		}
+#define CUS_EVT_BEACON_SNR_LOW      "EVENT=BEACON_SNR_LOW"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_BEACON_SNR_LOW,
+		     strlen(CUS_EVT_BEACON_SNR_LOW))) {
+			printf("EVENT: BEACON_SNR_LOW\n");
+			break;
+		}
+#define CUS_EVT_BEACON_SNR_HIGH     "EVENT=BEACON_SNR_HIGH"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_BEACON_SNR_HIGH,
+		     strlen(CUS_EVT_BEACON_SNR_HIGH))) {
+			printf("EVENT: BEACON_SNR_HIGH\n");
+			break;
+		}
+#define CUS_EVT_MAX_FAIL        "EVENT=MAX_FAIL"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_MAX_FAIL,
+		     strlen(CUS_EVT_MAX_FAIL))) {
+			printf("EVENT: MAX_FAIL\n");
+			break;
+		}
+#define CUS_EVT_DATA_RSSI_LOW       "EVENT=DATA_RSSI_LOW"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_DATA_RSSI_LOW,
+		     strlen(CUS_EVT_DATA_RSSI_LOW))) {
+			printf("EVENT: DATA_RSSI_LOW\n");
+			break;
+		}
+#define CUS_EVT_DATA_SNR_LOW        "EVENT=DATA_SNR_LOW"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_DATA_SNR_LOW,
+		     strlen(CUS_EVT_DATA_SNR_LOW))) {
+			printf("EVENT: DATA_SNR_LOW\n");
+			break;
+		}
+#define CUS_EVT_DATA_RSSI_HIGH      "EVENT=DATA_RSSI_HIGH"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_DATA_RSSI_HIGH,
+		     strlen(CUS_EVT_DATA_RSSI_HIGH))) {
+			printf("EVENT: DATA_RSSI_HIGH\n");
+			break;
+		}
+#define CUS_EVT_DATA_SNR_HIGH       "EVENT=DATA_SNR_HIGH"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_DATA_SNR_HIGH,
+		     strlen(CUS_EVT_DATA_SNR_HIGH))) {
+			printf("EVENT: DATA_SNR_HIGH\n");
+			break;
+		}
+#define CUS_EVT_LINK_QUALITY        "EVENT=LINK_QUALITY"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_LINK_QUALITY,
+		     strlen(CUS_EVT_LINK_QUALITY))) {
+			printf("EVENT: LINK_QUALITY\n");
+			break;
+		}
+#define CUS_EVT_WEP_ICV_ERR     "EVENT=WEP_ICV_ERR"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_WEP_ICV_ERR,
+		     strlen(CUS_EVT_WEP_ICV_ERR))) {
+			printf("EVENT: WEP_ICV_ERR\n");
+			break;
+		}
+#define CUS_EVT_CHANNEL_SWITCH_ANN  "EVENT=CHANNEL_SWITCH_ANN"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_CHANNEL_SWITCH_ANN,
+		     strlen(CUS_EVT_CHANNEL_SWITCH_ANN))) {
+			printf("EVENT: CHANNEL_SWITCH_ANN\n");
+			break;
+		}
+#define CUS_EVT_HS_WAKEUP       "HS_WAKEUP"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_HS_WAKEUP,
+		     strlen(CUS_EVT_HS_WAKEUP))) {
+			printf("EVENT: HS_WAKEUP\n");
+			break;
+		}
+#define CUS_EVT_HS_ACTIVATED        "HS_ACTIVATED"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_HS_ACTIVATED,
+		     strlen(CUS_EVT_HS_ACTIVATED))) {
+			printf("EVENT: HS_ACTIVATED\n");
+			break;
+		}
+#define CUS_EVT_HS_DEACTIVATED      "HS_DEACTIVATED"
+		if (!strncmp
+		    ((char *)event, CUS_EVT_HS_DEACTIVATED,
+		     strlen(CUS_EVT_HS_DEACTIVATED))) {
+			printf("EVENT: HS_DEACTIVATED\n");
 			break;
 		}
 /** Custom indication message sent to the application layer for WMM changes */

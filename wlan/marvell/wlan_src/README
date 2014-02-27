@@ -61,10 +61,15 @@
 	  pm_keep_power=1|0 <PM keep power in suspend (default) | PM no power in suspend>
 	  cfg_11d=0|1|2 <use MLAN default | enable 11d | disable 11d>
 	  req_fw_nowait=0|1 <use request_firmware API (default) | use request_firmware_nowait API>
+	  fw_crc_check=1|0 <enable FW download CRC check (default) | disable FW download CRC check>
 	  init_cfg=<init config (MAC addresses, registers etc.) file name>
 		e.g. copy init_cfg.conf to firmware directory, init_cfg=mrvl/init_cfg.conf
 	  cal_data_cfg=<CAL data config file name>
 		e.g. copy cal_data.conf to firmware directory, cal_data_cfg=mrvl/cal_data.conf
+	  txpwrlimit_cfg=<Tx power limit config file name>
+		e.g. copy txpwrlimit_cfg_set.conf to firmware directory, txpwrlimit_cfg=mrvl/txpwrlimit_cfg_set.conf
+	  init_hostcmd_cfg=<init hostcmd config file name>
+		e.g. copy init_hostcmd_cfg.conf to firmware directory, init_hostcmd_cfg=mrvl/init_hostcmd_cfg.conf
 	  cfg80211_wext=<bit mask of CFG80211 and WEXT control>
 		Bit 0: STA WEXT
 		Bit 1: uAP WEXT
@@ -1074,6 +1079,10 @@ txpowercfg
 
 	Note: Firmware may adjust the setting if over limit, final value can be
 	      verified using get command.
+	      It will not be possible to set separate Tx power levels for MCS0-MCS7
+	      (BW20) rates and 802.11g rates in production code. The algorithm will
+	      choose the least common value specified in CAL DATA, txpowercfg and
+	      txpwrlimit settings and apply it for both 11g and HT20. .
 
 	Examples:
 		iwpriv mlan0 txpowercfg 0xff        : Default power configuration

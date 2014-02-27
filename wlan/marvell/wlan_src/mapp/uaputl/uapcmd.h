@@ -70,4 +70,5 @@ int apcmd_sys_cfg_custom_ie(int argc, char *argv[]);
 int apcmd_sys_cfg_wmm(int argc, char *argv[]);
 int apcmd_sys_cfg_11n(int argc, char *argv[]);
 int apcmd_sys_cfg_2040_coex(int argc, char *argv[]);
+int apcmd_sys_cfg_restrict_client_mode(int argc, char *argv[]);
 #endif /* _UAP_H */

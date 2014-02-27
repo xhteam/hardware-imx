@@ -126,13 +126,16 @@ discard_gratuitous_ARP_msg(RxPacketHdr_t * prx_pkt, pmlan_adapter pmadapter)
 	IPv6_Nadv_t *pNadv_hdr;
 	t_u8 ret = MFALSE;
 
-	/* IPV4 pkt check */
+	/* IPV4 pkt check * A gratuitous ARP is an ARP packet * where the
+	   source and destination IP are both set to * the IP of the machine
+	   issuing the packet. */
 	if (memcmp
 	    (pmadapter, proto_ARP_type, &prx_pkt->eth803_hdr.h803_len,
 	     sizeof(proto_ARP_type)) == 0) {
 		parp_hdr = (IPv4_ARP_t *) (&prx_pkt->rfc1042_hdr);
-		if ((parp_hdr->op_code == 0x0100) ||
-		    (parp_hdr->op_code == 0x0200)) {
+		/* Graguitous ARP can be ARP request or ARP reply */
+		if ((parp_hdr->op_code == mlan_htons(0x01)) ||
+		    (parp_hdr->op_code == mlan_htons(0x02))) {
 			if (memcmp
 			    (pmadapter, parp_hdr->src_ip, parp_hdr->dst_ip,
 			     4) == 0) {
@@ -141,16 +144,15 @@ discard_gratuitous_ARP_msg(RxPacketHdr_t * prx_pkt, pmlan_adapter pmadapter)
 		}
 	}
 
-	/* IPV6 pkt check */
+	/* IPV6 pkt check * An unsolicited Neighbor Advertisement pkt is *
+	   marked by a cleared Solicited Flag */
 	if (memcmp
 	    (pmadapter, proto_ARP_type_v6, &prx_pkt->eth803_hdr.h803_len,
 	     sizeof(proto_ARP_type_v6)) == 0) {
 		pNadv_hdr = (IPv6_Nadv_t *) (&prx_pkt->rfc1042_hdr);
-		/* Check Nadv type */
-		if (pNadv_hdr->icmp_type == 0x88) {
-			if (memcmp
-			    (pmadapter, pNadv_hdr->src_addr,
-			     pNadv_hdr->taget_addr, 16) == 0) {
+		/* Check Nadv type: next header is ICMPv6 and icmp type is Nadv */
+		if (pNadv_hdr->next_hdr == 0x3A && pNadv_hdr->icmp_type == 0x88) {
+			if ((pNadv_hdr->flags & mlan_htonl(0x40000000)) == 0) {
 				ret = MTRUE;
 			}
 		}
@@ -161,12 +163,12 @@ discard_gratuitous_ARP_msg(RxPacketHdr_t * prx_pkt, pmlan_adapter pmadapter)
 
 /**
  *  @brief This function processes received packet and forwards it
- *  		to kernel/upper layer
+ *          to kernel/upper layer
  *
  *  @param pmadapter A pointer to mlan_adapter
- *  @param pmbuf     A pointer to mlan_buffer which includes the received packet
+ *  @param pmbuf   A pointer to mlan_buffer which includes the received packet
  *
- *  @return 	   MLAN_STATUS_SUCCESS or MLAN_STATUS_FAILURE
+ *  @return        MLAN_STATUS_SUCCESS or MLAN_STATUS_FAILURE
  */
 mlan_status
 wlan_process_rx_packet(pmlan_adapter pmadapter, pmlan_buffer pmbuf)
@@ -194,9 +196,9 @@ wlan_process_rx_packet(pmlan_adapter pmadapter, pmlan_buffer pmbuf)
 /** Size of debugging structure */
 #define SIZE_OF_DBG_STRUCT 4
 	if (prx_pd->rx_pkt_type == PKT_TYPE_DEBUG) {
-		t_u8 dbgType;
-		dbgType = *(t_u8 *) & prx_pkt->eth803_hdr;
-		if (dbgType == DBG_TYPE_SMALL) {
+		t_u8 dbg_type;
+		dbg_type = *(t_u8 *) & prx_pkt->eth803_hdr;
+		if (dbg_type == DBG_TYPE_SMALL) {
 			PRINTM(MFW_D, "\n");
 			DBG_HEXDUMP(MFW_D, "FWDBG",
 				    (char *)((t_u8 *) & prx_pkt->eth803_hdr +
@@ -262,7 +264,6 @@ wlan_process_rx_packet(pmlan_adapter pmadapter, pmlan_buffer pmbuf)
 			       "Bypass sending Gratuitous ARP frame to Kernel.\n");
 			goto done;
 		}
-
 		/* Chop off the RxPD */
 		hdr_chop =
 			(t_u32) ((t_ptr) & prx_pkt->eth803_hdr -
@@ -280,7 +281,6 @@ wlan_process_rx_packet(pmlan_adapter pmadapter, pmlan_buffer pmbuf)
 	DBG_HEXDUMP(MDAT_D, "Rx Payload",
 		    ((t_u8 *) prx_pd + prx_pd->rx_pkt_offset),
 		    MIN(prx_pd->rx_pkt_length, MAX_DATA_DUMP_LEN));
-
 	priv->rxpd_rate = prx_pd->rx_rate;
 	priv->rxpd_htinfo = prx_pd->ht_info;
 
@@ -300,9 +300,8 @@ wlan_process_rx_packet(pmlan_adapter pmadapter, pmlan_buffer pmbuf)
 		       "STA Rx Error: moal_recv_packet returned error\n");
 	}
 done:
-	if (ret != MLAN_STATUS_PENDING) {
+	if (ret != MLAN_STATUS_PENDING)
 		wlan_free_mlan_buffer(pmadapter, pmbuf);
-	}
 	LEAVE();
 
 	return ret;
@@ -395,6 +394,15 @@ wlan_ops_sta_process_rx_packet(IN t_void * adapter, IN pmlan_buffer pmbuf)
 		memcpy(pmadapter, ta,
 		       priv->curr_bss_params.bss_descriptor.mac_address,
 		       MLAN_MAC_ADDR_LENGTH);
+	}
+
+	if ((priv->port_ctrl_mode == MTRUE && priv->port_open == MFALSE) &&
+	    (rx_pkt_type != PKT_TYPE_BAR)) {
+		mlan_11n_rxreorder_pkt(priv, prx_pd->seq_num, prx_pd->priority,
+				       ta, (t_u8) prx_pd->rx_pkt_type,
+				       (t_void *) RX_PKT_DROPPED_IN_FW);
+		wlan_process_rx_packet(pmadapter, pmbuf);
+		goto done;
 	}
 
 	/* Reorder and send to OS */

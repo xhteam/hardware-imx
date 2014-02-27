@@ -49,9 +49,9 @@ do { \
 	fflush(stdout); \
 } while (0);
 
-#define OpCodePack(ogf,ocf)   (uint16_t)((ocf & 0x03ff) | (ogf <<10))
+#define OpCodePack(ogf, ocf)   (uint16_t)((ocf & 0x03ff) | (ogf << 10))
 
-static uint8_t verbose = 0;
+static uint8_t verbose;
 
 static struct option main_options[] = {
 	{"help", 0, 0, 'h'},

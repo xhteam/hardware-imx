@@ -290,7 +290,7 @@ typedef struct {
 
 	t_s16 anpi;		       /**< ANPI calculated from the histogram */
     /** RPI histogram bins. The number of bins utilized is variable and must
-        be calculated by the header length */
+		be calculated by the header length */
 	t_u8 rpiDensities[11];
 } __ATTRIB_PACK__ MrvlIEtypes_ChanRptNoiseHist_t;
 
@@ -474,7 +474,6 @@ int process_opchan(int argc, char *argv[]);
 int process_changroup(int argc, char *argv[]);
 int process_fcontrol(int argc, char *argv[]);
 int process_iapp(int argc, char *argv[]);
-int process_dscpmap(int argc, char *argv[]);
 int process_rf_tx_power(int argc, char *argv[]);
 int process_authenticate(int argc, char *argv[]);
 int process_txpowdisp(int argc, char *argv[]);
