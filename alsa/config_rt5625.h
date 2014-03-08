@@ -47,7 +47,7 @@ static struct route_setting defaults_rt5625[] = {
     },
 	{
 		.ctl_name = "HPOUT Playback Volume",
-		.intval = 26,
+		.intval = 23,
 	},
     
     {
@@ -231,10 +231,11 @@ static struct route_setting vx_main_mic_input_rt5625_aec[] = {
 };
 
 static struct route_setting vx_main_mic_input_rt5625[] = {
+	/*
 	{
 		.ctl_name = "AEC Mode",
 		.intval = AEC_MODE_DISABLED,
-	},	
+	},*/	
 	{
 		.ctl_name = "Mic1 Playback Volume",
 		.intval = 25,
@@ -274,10 +275,10 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
 
 
 static struct route_setting vx_hp_mic_input_rt5625[] = {
-	{
+	/*{
 		.ctl_name = "AEC Mode",
 		.intval = AEC_MODE_DISABLED,
-	},	
+	},*/	
     {
         .ctl_name = "Right HP Mixer Phone Playback Switch",
 		.intval = 1,
