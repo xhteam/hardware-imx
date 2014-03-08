@@ -20,6 +20,16 @@
 
 #include "audio_hardware.h"
 
+/*
+ * We don't have any real earpiece output, now mapping earpiece to on board speaker.
+ * Because it's unstable while using code vodsp to do echo cancelling,it's disable temporarily.
+ * 
+ 
+.vx_main_mic_input	is for onboard speaker and microphone
+.vx_hp_mic_input	 	is for headphone without microphone(using on board microphone)
+.vx_hs_mic_input 		is for headset with microphone
+.vx_bt_mic_input	 	is for bluetooth microphone
+*/
 
 enum audio_aec_mode{
 	AEC_MODE_DISABLED=0,
@@ -55,7 +65,7 @@ static struct route_setting bt_output_rt5625[] = {
 static struct route_setting speaker_output_rt5625[] = {
     {
         .ctl_name = "SPKOUT Playback Volume",
-        .intval = 26,
+        .intval = 28,
     },
     {
         .ctl_name = "SPKOUT Playback Switch",
@@ -158,7 +168,7 @@ Path in codec : 1.PhoneIN( Differential ) -> ADC record mixer L->ADC L -> RxDP -
                         3.TxDP -> DAC(16k sample rate) -> mono mixer -> AUXOUT( Differential ) 
                 4.TxDC -> VoDAC(16k sample rate) -> SPKmixer -> SPKOUT 					    
 */
-static struct route_setting vx_main_mic_input_rt5625[] = {
+static struct route_setting vx_main_mic_input_rt5625_aec[] = {
 	{
 		.ctl_name = "AEC Mode",
 		.intval = AEC_MODE_ANALOG_IN_ANALOG_OUT,
@@ -220,6 +230,49 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
     },
 };
 
+static struct route_setting vx_main_mic_input_rt5625[] = {
+	{
+		.ctl_name = "AEC Mode",
+		.intval = AEC_MODE_DISABLED,
+	},	
+	{
+		.ctl_name = "Mic1 Playback Volume",
+		.intval = 25,
+	},	
+	{
+		.ctl_name = "Mic1 Amp Boost Type",
+		.intval = 0,
+	},
+	{
+		.ctl_name = "Mic1 Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "MoNo Mixer Mic1 Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "AUXOUT Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "AUXOUT Playback Volume",
+		.intval = 23,
+	},
+	{
+		.ctl_name = "AUXOUT Mux",
+		.intval = 3,//mux source fron nonomixer
+	},
+	{
+		.ctl_name = "Phone Playback Volume",
+		.intval = 31,
+	},
+    {
+        .ctl_name = NULL,
+    },
+};
+
+
 static struct route_setting vx_hp_mic_input_rt5625[] = {
 	{
 		.ctl_name = "AEC Mode",
@@ -274,7 +327,7 @@ static struct route_setting vx_hp_mic_input_rt5625[] = {
 |-----------|
 |                   |<------------------AuxOut<---------|
 |Voice Modem|                                                      ---- |                            
-|                   |------> MIC1---->Mono Mixer------->|          
+|                   |------> MIC2---->Mono Mixer------->|          
 |-------  ---|-----> PhoneIn-------HP Mixer-->Headset  
 */
 static struct route_setting vx_hs_mic_input_rt5625[] = {
