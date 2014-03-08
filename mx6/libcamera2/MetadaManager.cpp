@@ -681,6 +681,7 @@ status_t MetadaManager::getFlashMode(uint8_t *mode)
 	{
 		*mode=ANDROID_FLASH_OFF;
 	}
+
 	return NO_ERROR;
 }
 
@@ -806,7 +807,7 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     //TODO: sensor color calibration fields
 
     // android.flash
-    uint8_t flashAvailable = 0; /*Ellie: change to 1 to enable flash light*/
+    uint8_t flashAvailable = 1; /*Ellie: change to 1 to enable flash light*/
     ADD_OR_SIZE(ANDROID_FLASH_AVAILABLE, &flashAvailable, 1);
 
     static const int64_t flashChargeDuration = 0;
@@ -906,8 +907,10 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     // android.control
 
     static const uint8_t availableSceneModes[] = {
-            ANDROID_CONTROL_SCENE_MODE_PORTRAIT,
-            ANDROID_CONTROL_SCENE_MODE_LANDSCAPE
+            ANDROID_CONTROL_SCENE_MODE_ACTION,
+            ANDROID_CONTROL_SCENE_MODE_NIGHT,
+            ANDROID_CONTROL_SCENE_MODE_SUNSET,
+            ANDROID_CONTROL_SCENE_MODE_PARTY,
     };
     ADD_OR_SIZE(ANDROID_CONTROL_AVAILABLE_SCENE_MODES,
             availableSceneModes, sizeof(availableSceneModes));
@@ -924,7 +927,9 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
 
     static const uint8_t availableAeModes[] = {
             ANDROID_CONTROL_AE_OFF,
-            ANDROID_CONTROL_AE_ON
+            ANDROID_CONTROL_AE_ON,
+            ANDROID_CONTROL_AE_ON_AUTO_FLASH,
+            ANDROID_CONTROL_AE_ON_ALWAYS_FLASH,
     };
     ADD_OR_SIZE(ANDROID_CONTROL_AE_AVAILABLE_MODES,
             availableAeModes, sizeof(availableAeModes));
@@ -952,13 +957,19 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
             availableAntibandingModes, sizeof(availableAntibandingModes));
 
     static const uint8_t availableAwbModes[] = {
-            ANDROID_CONTROL_AWB_OFF,
-            ANDROID_CONTROL_AWB_AUTO
+			ANDROID_CONTROL_AWB_OFF,
+			ANDROID_CONTROL_AWB_AUTO,
+			ANDROID_CONTROL_AWB_INCANDESCENT,
+			ANDROID_CONTROL_AWB_FLUORESCENT,
+			ANDROID_CONTROL_AWB_DAYLIGHT,
+			ANDROID_CONTROL_AWB_CLOUDY_DAYLIGHT
+            
     };
     ADD_OR_SIZE(ANDROID_CONTROL_AWB_AVAILABLE_MODES,
             availableAwbModes, sizeof(availableAwbModes));
 
-    static const uint8_t availableAfModes[] = {/*Ellie changed to support autofocus*/
+    static const uint8_t availableAfModes[] = {
+			ANDROID_CONTROL_AF_OFF,
             ANDROID_CONTROL_AF_AUTO
     };
     ADD_OR_SIZE(ANDROID_CONTROL_AF_AVAILABLE_MODES,
@@ -969,6 +980,30 @@ status_t MetadaManager::createStaticInfo(camera_metadata_t **info, bool sizeRequ
     };
     ADD_OR_SIZE(ANDROID_CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES,
             availableVstabModes, sizeof(availableVstabModes));
+
+	static const uint8_t sceneModeOverrides[] =
+	{
+		// ANDROID_CONTROL_SCENE_MODE_ACTION
+		ANDROID_CONTROL_AE_ON,
+		ANDROID_CONTROL_AWB_AUTO,
+		ANDROID_CONTROL_AF_OFF,
+		// ANDROID_CONTROL_SCENE_MODE_NIGHT
+		ANDROID_CONTROL_AE_ON,
+		ANDROID_CONTROL_AWB_AUTO,
+		ANDROID_CONTROL_AF_OFF,
+		// ANDROID_CONTROL_SCENE_MODE_SUNSET
+		ANDROID_CONTROL_AE_ON,
+		ANDROID_CONTROL_AWB_DAYLIGHT,
+		ANDROID_CONTROL_AF_OFF,
+		// ANDROID_CONTROL_SCENE_MODE_PARTY
+		ANDROID_CONTROL_AE_ON,
+		ANDROID_CONTROL_AWB_AUTO,
+		ANDROID_CONTROL_AF_OFF
+	};
+	static int numSceneModeOverrides = sizeof(sceneModeOverrides);
+
+    ADD_OR_SIZE(ANDROID_CONTROL_SCENE_MODE_OVERRIDES,
+            sceneModeOverrides, numSceneModeOverrides);
 
     static const uint8_t quirkTriggerAuto = 1;
     ADD_OR_SIZE(ANDROID_QUIRKS_TRIGGER_AF_WITH_AUTO,

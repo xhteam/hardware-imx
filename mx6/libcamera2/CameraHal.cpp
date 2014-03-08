@@ -49,7 +49,6 @@ void CameraHal::handleError(int err)
 
 void CameraHal::handleEvent(sp<CameraEvent>& event)
 {
-	FLOGW("handleEvent type=%d\n",event->mEventType);
 	if(CameraEvent::EVENT_FOCUS==event->mEventType){
 		mNotifyCb(CAMERA2_MSG_AUTOFOCUS,(int32_t)event->mData,triggerid_af,0,mNotifyUserPtr);
 	}else if(CameraEvent::EVENT_EXPOSURE==event->mEventType){
@@ -147,7 +146,6 @@ int CameraHal::set_notify_callback(camera2_notify_callback notify_cb,
 
 int CameraHal::trigger_action(uint32_t trigger_id,int32_t ext1,int32_t ext2){
 	int ret;
-	ALOGI("%s:%d ext1[0x%x] ext2[0x%x]", __FUNCTION__,trigger_id,ext1,ext2);
 	if(trigger_id==CAMERA2_TRIGGER_AUTOFOCUS){
 		triggerid_af = ext1;
 		ret = autoFocus();

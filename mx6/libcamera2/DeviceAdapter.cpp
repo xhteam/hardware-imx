@@ -23,6 +23,58 @@
 #include "TVINDevice.h"
 #include "mt9p111Csi.h"
 
+
+#define NO_TRANSITION                   (0)
+#define HAL_AFSTATE_INACTIVE            (1)
+#define HAL_AFSTATE_NEEDS_COMMAND       (2)
+#define HAL_AFSTATE_STARTED             (3)
+#define HAL_AFSTATE_SCANNING            (4)
+#define HAL_AFSTATE_LOCKED              (5)
+#define HAL_AFSTATE_FAILED              (6)
+#define HAL_AFSTATE_NEEDS_DETERMINATION (7)
+#define HAL_AFSTATE_PASSIVE_FOCUSED     (8)
+
+void DeviceAdapter::OnAfEvent(int state){
+	sp<CameraEvent> cameraEvt = new CameraEvent();
+    cameraEvt->mEventType = CameraEvent::EVENT_FOCUS;
+		cameraEvt->mData = (void*)state;
+    dispatchEvent(cameraEvt);
+	
+}
+void DeviceAdapter::OnAfTriggerAutoMacro(int id)
+{
+    int nextState = NO_TRANSITION;
+	
+
+    switch (m_afState) {
+    case HAL_AFSTATE_INACTIVE:
+    case HAL_AFSTATE_PASSIVE_FOCUSED:
+    case HAL_AFSTATE_SCANNING:
+        nextState = HAL_AFSTATE_NEEDS_COMMAND;
+        m_IsAfTriggerRequired = true;
+        break;
+    case HAL_AFSTATE_NEEDS_COMMAND:
+        nextState = NO_TRANSITION;
+        break;
+    case HAL_AFSTATE_STARTED:
+        nextState = NO_TRANSITION;
+        break;
+    case HAL_AFSTATE_LOCKED:
+        nextState = HAL_AFSTATE_NEEDS_COMMAND;
+        m_IsAfTriggerRequired = true;
+        break;
+    case HAL_AFSTATE_FAILED:
+        nextState = HAL_AFSTATE_NEEDS_COMMAND;
+        m_IsAfTriggerRequired = true;
+        break;
+    default:
+        break;
+    }
+    ALOGV("(%s): State (%d) -> (%d)", __FUNCTION__, m_afState, nextState);
+    if (nextState != NO_TRANSITION)
+        m_afState = nextState;
+}
+
 sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
 {
     sp<DeviceAdapter> devAdapter;
@@ -59,7 +111,7 @@ sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
 }
 
 DeviceAdapter::DeviceAdapter()
-    : mCameraHandle(-1), mQueued(0)
+    : mCameraHandle(-1), mQueued(0),m_afState(HAL_AFSTATE_INACTIVE)
 {}
 
 DeviceAdapter::~DeviceAdapter()
@@ -401,8 +453,7 @@ status_t DeviceAdapter::fillCameraFrame(CameraFrame *frame)
 status_t DeviceAdapter::startDeviceLocked()
 {
     status_t ret = NO_ERROR;
-
-    fAssert(mBufferProvider != NULL);
+    
 
     int state;
     struct v4l2_buffer buf;
@@ -514,6 +565,8 @@ status_t DeviceAdapter::startImageCapture()
         return BAD_VALUE;
     }
 
+    fAssert(mBufferProvider != NULL);
+
     Mutex::Autolock lock(mBufsLock);
     mImageCapture = true;
     ret           = startDeviceLocked();
@@ -533,15 +586,14 @@ status_t DeviceAdapter::stopImageCapture()
     Mutex::Autolock lock(mBufsLock);
     mImageCapture = false;
     ret           = stopDeviceLocked();
-	#if 0
+
     // Ellie: turn off flash after taking picture if it's on
     if(mSingleFlashing)
     {
-        setFlash(0);
-        mFlashOn=false;
+        setFlash(false);
         mSingleFlashing=false;
     }
-	#endif
+
     return ret;
 }
 
@@ -569,67 +621,26 @@ CameraFrame * DeviceAdapter::acquireCameraFrame()
     return mDeviceBufs[index];
 }
 
-//#define FSL_CAMERAHAL_DUMP
-static void bufferDump(CameraFrame *frame)
+status_t DeviceAdapter::setFlash(bool on)
 {
-#ifdef FSL_CAMERAHAL_DUMP
+    int ret;
+    struct v4l2_control ctrl;
+	if(mFlashOn!=on)
+		mFlashOn = on;
 
-    // for test code
-    char value[100];
-    memset(value, 0, sizeof(value));
-    static int vflg = 0;
-    property_get("rw.camera.test", value, "");
-    if (strcmp(value, "1") == 0)
-        vflg = 1;
-    if (vflg) {
-        FILE *pf = NULL;
-        pf = fopen("/sdcard/camera_tst.data", "wb");
-        if (pf == NULL) {
-            FLOGI("open /sdcard/camera_tst.data failed");
-        }
-        else {
-            FLOGI("-----write-----");
-            fwrite(frame->mVirtAddr, frame->mSize, 1, pf);
-            fclose(pf);
-        }
-        vflg = 0;
+    ctrl.id = V4L2_CID_MXC_FLASH;
+    ctrl.value = mFlashOn?1:0;
+    ret = ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl);
+    if (ret < 0) {
+        FLOGE("updateAutoExposure: VIDIOC_S_CTRL Failed: %s", strerror(errno));
+        return ret;
     }
-#endif // ifdef FSL_CAMERAHAL_DUMP
+    return NO_ERROR;
 }
 
-#define FLASH_CONTROL_PATH "/sys/class/i2c-dev/i2c-2/device/2-0037/brightness"
-status_t DeviceAdapter::setFlash(int on)
-{
-	FILE *pf = NULL;
-	char c[2];
-	pf = fopen(FLASH_CONTROL_PATH, "w");
-	if (pf == NULL) 
-	{
-		FLOGI("open %s failed",FLASH_CONTROL_PATH);
-		return NAME_NOT_FOUND;
-	}
-	else 
-	{
-		if(on)
-		{
-			// set brightness to 1
-			c[0]='1';
-			fwrite(c, 1, 1, pf);
-		}
-		else
-		{
-			// set brightness to 0
-			c[0]='0';
-			fwrite(c, 1, 1, pf);
-		}
-		fclose(pf);
-	}
-	FLOGI("setFlash %d",on);
-	return NO_ERROR;
-}
 
 // Ellie added
-status_t DeviceAdapter::updatePQParam()
+status_t DeviceAdapter::updateAutoExposure()
 {
     int32_t exp_comp;
     int ret;
@@ -657,6 +668,7 @@ status_t DeviceAdapter::updatePQParam()
 int DeviceAdapter::deviceThread()
 {
     CameraFrame *frame = NULL;
+    int res;
 
     if (mQueued <= 0) {
         FLOGI("no buffer in v4l2, continue");
@@ -668,36 +680,8 @@ int DeviceAdapter::deviceThread()
         return BAD_VALUE;
     }
 
-	#if 0
 	// Ellie added: turn on/off flash according to the mode set
-    uint8_t fl_mode;
-    int res;
-    res = mMetadaManager->getFlashMode(&fl_mode);
-    if (res != NO_ERROR) {
-        FLOGE("%s: getFlashMode failed", __FUNCTION__);
-    }
-    else
-    {
-        if(fl_mode==ANDROID_FLASH_TORCH)
-        {
-            if(!mFlashOn)
-            {
-                setFlash(1);
-                mFlashOn=true;
-            }
-        }
-		else
-        {
-            if(mFlashOn&&!mSingleFlashing)
-            {
-                setFlash(0);
-                mFlashOn=false;
-            }
-        }
-    }
-
-    updatePQParam();
-	#endif
+    updateAutoExposure();
 
     frame = acquireCameraFrame();
     if (!frame) {
@@ -721,8 +705,9 @@ int DeviceAdapter::deviceThread()
     }
 
     dispatchCameraFrame(frame);
+
     if (mImageCapture || !mPreviewing) {
-        FLOGI("device thread exit...");
+        FLOGI("device thread exit...");		
         return ALREADY_EXISTS;
     }
 
@@ -732,33 +717,6 @@ int DeviceAdapter::deviceThread()
 // Ellie implemented: turn on flash before starting autofocus if the mode is "single"
 status_t DeviceAdapter::autoFocus()
 {
-	#if 0
-	uint8_t fl_mode;
-	int ret;
-	struct v4l2_control ctrl;
-
-	ret = mMetadaManager->getFlashMode(&fl_mode);
-	if (ret != NO_ERROR) {
-		FLOGE("%s: getFlashMode failed", __FUNCTION__);
-	}
-	else if(fl_mode==ANDROID_FLASH_SINGLE)
-	{
-		setFlash(1);
-		mSingleFlashing=true;
-		mFlashOn=true;
-	}
-
-	ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
-	ctrl.value = 1;
-	ret = ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl);
-	if (ret < 0) {
-		FLOGE("autoFocus: VIDIOC_S_CTRL Failed: %s", strerror(errno));
-		return ret;
-	}
-
-	mFocusStartTime = systemTime();
-	mAutoFocusing = true;
-	#endif
 	mAutoFocusing = true;
     if (mAutoFocusThread != NULL) {
         mAutoFocusThread.clear();
@@ -776,12 +734,13 @@ status_t DeviceAdapter::cancelAutoFocus()
 {
 	Mutex::Autolock lock(mFocusLock);
 
+	mAutoFocusing = false;
+	
 	struct v4l2_control ctrl;	
 	ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
 	ctrl.value = 0;
 	ioctl(mCameraHandle, VIDIOC_S_CTRL, &ctrl);
 
-	mAutoFocusing = false;
 
 	return NO_ERROR;
 }
@@ -794,7 +753,21 @@ int DeviceAdapter::autoFocusThread()
 	int ret;
 	int success=0;
 	DurationTimer duration;
-	struct v4l2_control ctrl;	
+	struct v4l2_control ctrl;
+	uint8_t fl_mode;
+	bool bFlash4Focus=false;
+
+	ret = mMetadaManager->getFlashMode(&fl_mode);
+	if(fl_mode==ANDROID_FLASH_SINGLE)
+	{
+		setFlash(true);
+		if(!mSingleFlashing)
+			bFlash4Focus=true;
+	}
+
+
+	OnAfEvent(ANDROID_CONTROL_AF_STATE_ACTIVE_SCAN);
+
 	ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
 	ctrl.value = 1;
 	duration.start();
@@ -804,30 +777,28 @@ int DeviceAdapter::autoFocusThread()
 	}
 
 	do {
-		usleep(1000000);
+		usleep(500000);
 		ctrl.id = V4L2_CID_MXC_AUTOFOCUS;
 		ctrl.value = 0;
 		ret = ioctl(mCameraHandle, VIDIOC_G_CTRL, &ctrl);
 		if (ret < 0) {
 			FLOGE("autoFocusThread: VIDIOC_G_CTRL Failed: %s", strerror(errno));
 		}
-		else if(ctrl.value)
+		else if(ctrl.value){
 				success++;
+				break;
+		}
 
 		duration.stop();
-	}while(!success&&duration.durationUsecs()<2000000000);
+	}while(!success&&mAutoFocusing&&duration.durationUsecs()<2000000000);
 
 
-	sp<CameraEvent> cameraEvt = new CameraEvent();
-    cameraEvt->mEventType = CameraEvent::EVENT_FOCUS;
-	if(success)
-		cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED;
-	else
-		cameraEvt->mData = (void*)ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED;		
-	
-    dispatchEvent(cameraEvt);
-
+	OnAfEvent(success?ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED:ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED);
     // exit the thread.
+	if(bFlash4Focus)
+	{
+		setFlash(false);
+	}
 
 	return UNKNOWN_ERROR;
 }
@@ -835,7 +806,6 @@ int DeviceAdapter::autoFocusThread()
 // Ellie: turn on flash before image capture if the mode is "single"
 status_t DeviceAdapter::precaptureMetering()
 {
-	uint8_t fl_mode;
 	int ret;
 
 /* dont' report to CaptureSequence because we are too fast, manageStandardPrecaptureWait is not able to catch both start and end events,
@@ -845,19 +815,16 @@ status_t DeviceAdapter::precaptureMetering()
 		mListener->handlePrecapture(ANDROID_CONTROL_AE_STATE_PRECAPTURE);
 	}
 #endif
+	uint8_t fl_mode;
 	ret = mMetadaManager->getFlashMode(&fl_mode);
-	if (ret != NO_ERROR) {
-		FLOGE("%s: getFlashMode failed", __FUNCTION__);
-	}
-	else
-	{
+	if(fl_mode!=ANDROID_FLASH_OFF) {
+		setFlash(true);		
 		if(fl_mode==ANDROID_FLASH_SINGLE)
 		{
-			setFlash(1);
 			mSingleFlashing=true;
-			mFlashOn=true;
 		}
 	}
+
 #if 0
 	if (mListener != NULL) {
 		mListener->handlePrecapture(ANDROID_CONTROL_AE_STATE_INACTIVE);

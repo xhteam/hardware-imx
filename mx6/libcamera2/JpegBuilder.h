@@ -26,8 +26,14 @@ extern "C" {
 }
 
 namespace android {
+
+#ifndef EXIF_MAKENOTE	
 #define EXIF_MAKENOTE "fsl_makernote"
+#endif
+
+#ifndef EXIF_MODEL
 #define EXIF_MODEL    "fsl_model"
+#endif
 
 #define MAX_EXIF_TAGS_SUPPORTED 30
 

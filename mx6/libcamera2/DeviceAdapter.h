@@ -133,14 +133,17 @@ protected:
     virtual status_t fillCameraFrame(CameraFrame *frame);
     virtual CameraFrame* acquireCameraFrame();
 
+	void OnAfTriggerAutoMacro(int id);
+	void OnAfEvent(int state);
+
     virtual status_t startDeviceLocked();
     virtual status_t stopDeviceLocked();
 
 private:
     int          deviceThread();
     int          autoFocusThread();
-    status_t setFlash(int on);
-    status_t updatePQParam();
+    status_t setFlash(bool on);
+    status_t updateAutoExposure();
 
 protected:
     CameraBufferProvider *mBufferProvider;
@@ -172,6 +175,9 @@ protected:
     nsecs_t mFocusStartTime;
     bool mAutoFocusing;
     bool mSingleFlashing;
+    //int dumpcnt;
+	int                                 m_afState;
+	bool 								m_IsAfTriggerRequired;
 };
 
 #endif // ifndef _DEVICE_ADAPTER_H_
