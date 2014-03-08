@@ -37,7 +37,7 @@ static struct route_setting defaults_rt5625[] = {
     },
 	{
 		.ctl_name = "HPOUT Playback Volume",
-		.intval = 23,
+		.intval = 26,
 	},
     
     {
