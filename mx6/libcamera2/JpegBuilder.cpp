@@ -25,6 +25,9 @@
 #include <errno.h>
 #include <math.h>
 
+
+#include <cutils/properties.h>
+
 #include "JpegBuilder.h"
 
 extern "C" {
@@ -232,15 +235,23 @@ status_t JpegBuilder::prepareImage(const StreamBuffer *streamBuf)
 {
     status_t ret = NO_ERROR;
     int eError   = 0;
+	char prop_v[PROPERTY_VALUE_MAX];
     struct timeval sTv;
     struct tm     *pTime;
 
+    property_get("ro.product.model",
+                 prop_v,
+                 EXIF_MODEL);
+
     if ((NO_ERROR == ret) && (mEXIFData.mModelValid)) {
-        ret = insertElement(TAG_MODEL, EXIF_MODEL);
+        ret = insertElement(TAG_MODEL, prop_v);
     }
 
+    property_get("ro.product.brand",
+                 prop_v,
+                 EXIF_MAKENOTE);
     if ((NO_ERROR == ret) && (mEXIFData.mMakeValid)) {
-        ret = insertElement(TAG_MAKE, EXIF_MAKENOTE);
+        ret = insertElement(TAG_MAKE, prop_v);
     }
 
     float focalLength;
