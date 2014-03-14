@@ -43,13 +43,48 @@ static struct route_setting defaults_rt5625[] = {
     /* general */
     {
         .ctl_name = "SPKOUT Playback Volume",
-        .intval = 26,
+        .intval = 31,
     },
 	{
 		.ctl_name = "HPOUT Playback Volume",
+		.intval = 31,
+	},
+	{
+		.ctl_name = "SPK Mixer DAC Mixer Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "SPKOUT Mux",
+		.intval = 2,
+	},
+	{
+		.ctl_name = "Right HP Mixer HIFI DAC Playback Switch",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "Left HP Mixer HIFI DAC Playback Switch",
+		.intval = 1,
+	},	  
+	{
+		.ctl_name = "HPROUT Mux",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "HPLOUT Mux",
+		.intval = 1,
+	},    
+	{
+		.ctl_name = "AUXOUT Playback Volume",
 		.intval = 23,
 	},
-    
+	{
+		.ctl_name = "AUXOUT Mux",
+		.intval = 3,//mux source fron nonomixer
+	},	
+	{
+        .ctl_name = "Phone Playback Volume",
+		.intval = 15,
+    },	
     {
         .ctl_name = NULL,
     },
@@ -64,20 +99,8 @@ static struct route_setting bt_output_rt5625[] = {
 //default use hp mixer to speaker
 static struct route_setting speaker_output_rt5625[] = {
     {
-        .ctl_name = "SPKOUT Playback Volume",
-        .intval = 28,
-    },
-    {
         .ctl_name = "SPKOUT Playback Switch",
         .intval = 1,
-    },
-    {
-        .ctl_name = "SPK Mixer DAC Mixer Playback Switch",
-        .intval = 1,
-    },
-    {
-        .ctl_name = "SPKOUT Mux",
-        .intval = 2,
     },
     {
         .ctl_name = NULL,
@@ -85,22 +108,6 @@ static struct route_setting speaker_output_rt5625[] = {
 };
 
 static struct route_setting hs_output_rt5625[] = {
-    {
-        .ctl_name = "Right HP Mixer HIFI DAC Playback Switch",
-        .intval = 1,
-    },
-    {
-        .ctl_name = "Left HP Mixer HIFI DAC Playback Switch",
-        .intval = 1,
-    },    
-    {
-        .ctl_name = "HPROUT Mux",
-        .intval = 1,
-    },
-	{
-		.ctl_name = "HPLOUT Mux",
-		.intval = 1,
-	},
 	{
 		.ctl_name = "HPOUT Playback Switch",
 		.intval	= 1,
@@ -139,7 +146,7 @@ static struct route_setting mm_main_mic_input_rt5625[] = {
 	},
 	{
 		.ctl_name = "PCM Capture Volume",
-		.intval = 20,
+		.intval = 23,
 	},
     {
         .ctl_name = NULL,
@@ -231,14 +238,9 @@ static struct route_setting vx_main_mic_input_rt5625_aec[] = {
 };
 
 static struct route_setting vx_main_mic_input_rt5625[] = {
-	/*
 	{
-		.ctl_name = "AEC Mode",
-		.intval = AEC_MODE_DISABLED,
-	},*/	
-	{
-		.ctl_name = "Mic1 Playback Volume",
-		.intval = 25,
+		.ctl_name = "SPK Mixer Phone Playback Switch",
+		.intval = 1,
 	},	
 	{
 		.ctl_name = "Mic1 Amp Boost Type",
@@ -256,18 +258,6 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
 		.ctl_name = "AUXOUT Playback Switch",
 		.intval = 1,
 	},
-	{
-		.ctl_name = "AUXOUT Playback Volume",
-		.intval = 23,
-	},
-	{
-		.ctl_name = "AUXOUT Mux",
-		.intval = 3,//mux source fron nonomixer
-	},
-	{
-		.ctl_name = "Phone Playback Volume",
-		.intval = 31,
-	},
     {
         .ctl_name = NULL,
     },
@@ -275,10 +265,6 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
 
 
 static struct route_setting vx_hp_mic_input_rt5625[] = {
-	/*{
-		.ctl_name = "AEC Mode",
-		.intval = AEC_MODE_DISABLED,
-	},*/	
     {
         .ctl_name = "Right HP Mixer Phone Playback Switch",
 		.intval = 1,
@@ -302,18 +288,6 @@ static struct route_setting vx_hp_mic_input_rt5625[] = {
 	{
 		.ctl_name = "AUXOUT Playback Switch",
 		.intval = 1,
-	},
-	{
-		.ctl_name = "AUXOUT Playback Volume",
-		.intval = 23,
-	},
-	{
-		.ctl_name = "AUXOUT Mux",
-		.intval = 3,//mux source fron nonomixer
-	},
-	{
-		.ctl_name = "Phone Playback Volume",
-		.intval = 15,
 	},
     {
         .ctl_name = NULL,
@@ -356,18 +330,7 @@ static struct route_setting vx_hs_mic_input_rt5625[] = {
 		.ctl_name = "AUXOUT Playback Switch",
 		.intval = 1,
 	},
-	{
-		.ctl_name = "AUXOUT Playback Volume",
-		.intval = 23,
-	},
-	{
-		.ctl_name = "AUXOUT Mux",
-		.intval = 3,//mux source fron nonomixer
-	},
-	{
-        .ctl_name = "Phone Playback Volume",
-		.intval = 15,
-    },
+
 	{
         .ctl_name = NULL,
     },
