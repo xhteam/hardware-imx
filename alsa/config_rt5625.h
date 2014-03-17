@@ -83,7 +83,7 @@ static struct route_setting defaults_rt5625[] = {
 	},	
 	{
         .ctl_name = "Phone Playback Volume",
-		.intval = 15,
+		.intval = 23,
     },	
     {
         .ctl_name = NULL,
@@ -241,7 +241,11 @@ static struct route_setting vx_main_mic_input_rt5625[] = {
 	{
 		.ctl_name = "SPK Mixer Phone Playback Switch",
 		.intval = 1,
-	},	
+	},
+	{
+        .ctl_name = "Phone Playback Volume",
+		.intval = 23,
+    },
 	{
 		.ctl_name = "Mic1 Amp Boost Type",
 		.intval = 0,
@@ -274,9 +278,9 @@ static struct route_setting vx_hp_mic_input_rt5625[] = {
 		.intval = 1,
     },
 	{
-		.ctl_name = "MoNo Mixer Mic1 Playback Switch",
-		.intval = 1,
-	},    
+        .ctl_name = "Phone Playback Volume",
+		.intval = 15,
+    },    
 	{
 		.ctl_name = "Mic1 Amp Boost Type",
 		.intval = 0,
@@ -285,6 +289,10 @@ static struct route_setting vx_hp_mic_input_rt5625[] = {
 		.ctl_name = "Mic1 Playback Volume",
 		.intval = 23,
 	},	
+	{
+		.ctl_name = "MoNo Mixer Mic1 Playback Switch",
+		.intval = 1,
+	},	  
 	{
 		.ctl_name = "AUXOUT Playback Switch",
 		.intval = 1,
@@ -313,6 +321,10 @@ static struct route_setting vx_hs_mic_input_rt5625[] = {
 	{
         .ctl_name = "Left HP Mixer Phone Playback Switch",
 		.intval = 1,
+    },
+	{
+        .ctl_name = "Phone Playback Volume",
+		.intval = 15,
     },
 	{
 		.ctl_name = "Mic2 Amp Boost Type",
