@@ -590,7 +590,7 @@ status_t DeviceAdapter::stopImageCapture()
     // Ellie: turn off flash after taking picture if it's on
     if(mSingleFlashing)
     {
-        setFlash(false);
+        cancelFlash();
         mSingleFlashing=false;
     }
 
@@ -714,12 +714,30 @@ int DeviceAdapter::deviceThread()
     return NO_ERROR;
 }
 
+status_t DeviceAdapter::autoFlash(){
+    if (mAutoFlashThread != NULL) {
+		mAutoFlashThread->requestExitAndWait();
+        mAutoFlashThread.clear();
+    }
+
+    mAutoFlashThread = new AutoFlashThread(this);
+    if (mAutoFlashThread == NULL) {
+        return UNKNOWN_ERROR;
+    }
+    return NO_ERROR;
+}
+status_t DeviceAdapter::cancelFlash(){
+	mCancelFlash = true;
+    return NO_ERROR;
+}
+
 // Ellie implemented: turn on flash before starting autofocus if the mode is "single"
 status_t DeviceAdapter::autoFocus()
 {
 	mAutoFocusing = true;
     if (mAutoFocusThread != NULL) {
-        mAutoFocusThread.clear();
+		mAutoFocusThread->requestExitAndWait();
+		mAutoFocusThread.clear();
     }
 
     mAutoFocusThread = new AutoFocusThread(this);
@@ -743,6 +761,27 @@ status_t DeviceAdapter::cancelAutoFocus()
 
 
 	return NO_ERROR;
+}
+
+int DeviceAdapter::autoFlashThread(){	
+	DurationTimer duration;	
+	duration.start();
+
+	setFlash(true);
+
+	do {
+		usleep(500000);
+		duration.stop();
+	}while((true!=mCancelFlash)&&(ns2ms(us2ns(duration.durationUsecs()))<10000));
+
+	setFlash(false);
+	
+	if(true==mCancelFlash)
+		mCancelFlash = false;
+	
+
+	return UNKNOWN_ERROR;
+	
 }
 
 // Ellie implemented: keep checking the focus state, when autofocus finishes,either success or fail,send notification and turn off flash if the mode is "single"
@@ -818,7 +857,7 @@ status_t DeviceAdapter::precaptureMetering()
 	uint8_t fl_mode;
 	ret = mMetadaManager->getFlashMode(&fl_mode);
 	if(fl_mode!=ANDROID_FLASH_OFF) {
-		setFlash(true);		
+		autoFlash();		
 		if(fl_mode==ANDROID_FLASH_SINGLE)
 		{
 			mSingleFlashing=true;
