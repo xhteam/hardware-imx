@@ -50,18 +50,6 @@ static struct route_setting defaults_rt5625[] = {
 		.intval = 31,
 	},
 	{
-		.ctl_name = "SPKOUT Mux",
-		.intval = 2,
-	},
-	{
-		.ctl_name = "HPROUT Mux",
-		.intval = 1,
-	},
-	{
-		.ctl_name = "HPLOUT Mux",
-		.intval = 1,
-	},    
-	{
 		.ctl_name = "AUXOUT Playback Volume",
 		.intval = 23,
 	},
@@ -94,6 +82,10 @@ static struct route_setting speaker_output_rt5625[] = {
 		.ctl_name = "SPK Mixer DAC Mixer Playback Switch",
 		.intval = 1,
 	},    
+	{
+		.ctl_name = "SPKOUT Mux",
+		.intval = 2,
+	},	
     {
         .ctl_name = NULL,
     },
@@ -111,7 +103,15 @@ static struct route_setting hs_output_rt5625[] = {
 	{
 		.ctl_name = "Left HP Mixer HIFI DAC Playback Switch",
 		.intval = 1,
-	},	  	
+	},
+	{
+		.ctl_name = "HPROUT Mux",
+		.intval = 1,
+	},
+	{
+		.ctl_name = "HPLOUT Mux",
+		.intval = 1,
+	},
     {
         .ctl_name = NULL,
     },
