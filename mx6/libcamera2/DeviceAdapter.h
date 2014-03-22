@@ -60,6 +60,10 @@ public:
     virtual void setPreviewPixelFormat();
     virtual void setPicturePixelFormat();
 
+	
+    status_t         autoFlash();
+    status_t         cancelFlash();
+
     status_t         autoFocus();
     status_t         cancelAutoFocus();
     status_t         precaptureMetering();
@@ -104,6 +108,32 @@ protected:
         DeviceAdapter *mAdapter;
     };
 
+    class AutoFlashThread : public Thread {
+    public:
+        AutoFlashThread(DeviceAdapter *hw) :
+            Thread(false), mAdapter(hw) {}
+
+        virtual void onFirstRef() {
+            run("AutoFlashThread", PRIORITY_DEFAULT);
+        }
+
+        virtual bool threadLoop() {
+            int ret = 0;
+
+            ret = mAdapter->autoFlashThread();
+            if (ret != 0) {
+                return false;
+            }
+
+            // loop until we need to quit
+            return true;
+        }
+
+    private:
+        DeviceAdapter *mAdapter;
+    };
+	
+
     class DeviceThread : public Thread {
     public:
         DeviceThread(DeviceAdapter *hw) :
@@ -142,6 +172,7 @@ protected:
 private:
     int          deviceThread();
     int          autoFocusThread();
+	int 		 autoFlashThread();
     status_t setFlash(bool on);
     status_t updateAutoExposure();
 
@@ -160,7 +191,8 @@ protected:
     bool mFlashOn; // Ellie added
     int nExpComp; // Ellie added
     sp<DeviceThread> mDeviceThread;
-    sp<AutoFocusThread> mAutoFocusThread;
+    sp<AutoFocusThread> mAutoFocusThread;	
+    sp<AutoFlashThread> mAutoFlashThread;
 
     struct VideoInfo *mVideoInfo;
     int mCameraHandle;
@@ -175,6 +207,7 @@ protected:
     nsecs_t mFocusStartTime;
     bool mAutoFocusing;
     bool mSingleFlashing;
+	bool mCancelFlash;
     //int dumpcnt;
 	int                                 m_afState;
 	bool 								m_IsAfTriggerRequired;
