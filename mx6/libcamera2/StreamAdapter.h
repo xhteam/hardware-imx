@@ -124,6 +124,7 @@ protected:
     mutable sem_t mRespondSem;
 
     bool mReceiveFrame;
+	int skip;
     // for debug.
     bool mShowFps;
     nsecs_t mTime1;
