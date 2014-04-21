@@ -706,7 +706,7 @@ int DeviceAdapter::deviceThread()
 
     dispatchCameraFrame(frame);
 
-    if (mImageCapture || !mPreviewing) {
+    if (!mImageCapture && !mPreviewing) {
         FLOGI("device thread exit...");		
         return ALREADY_EXISTS;
     }
