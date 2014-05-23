@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifndef LOG_TAG
+#define LOG_TAG "Sensors"
+#endif
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
