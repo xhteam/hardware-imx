@@ -38,6 +38,7 @@ LOCAL_SRC_FILES:=    \
     TVINDevice.cpp \
     UvcDevice.cpp \
     mt9p111Csi.cpp \
+    Hm5065Csi.cpp \
     PhysMemAdapter.cpp \
     YuvToJpegEncoder.cpp \
     NV12_resize.c

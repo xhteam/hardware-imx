@@ -22,7 +22,7 @@
 #include "Ov5640Csi.h"
 #include "TVINDevice.h"
 #include "mt9p111Csi.h"
-
+#include "Hm5065Csi.h"
 
 #define NO_TRANSITION                   (0)
 #define HAL_AFSTATE_INACTIVE            (1)
@@ -101,8 +101,10 @@ sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
     else if (strstr(info.name, MT9P111_SENSOR_NAME)) {//add by allenyao
         FLOGI("DeviceAdapter: Create mt9p111_camera device");
         devAdapter = new mt9p111Csi();
-    }
-    else {
+    }else if (strstr(info.name, HM5065_SENSOR_NAME)) {//add by allenyao
+        FLOGI("DeviceAdapter: Create hm5065_camera device");
+        devAdapter = new Hm5065Csi();
+    }else {
         devAdapter = new OvDevice();
         FLOGE("sensor %s does not support well now!", info.name);
     }

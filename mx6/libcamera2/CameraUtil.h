@@ -76,6 +76,7 @@ using namespace android;
 #define ADV7180_TVIN_NAME "adv7180_decoder"
 #define V4LSTREAM_WAKE_LOCK "V4LCapture"
 #define MT9P111_SENSOR_NAME "mt9p111_camera" /*add by allenyao*/
+#define HM5065_SENSOR_NAME "hm5065_camera" /*add by allenyao*/
 
 
 #define MAX_PREVIEW_BUFFER      6
