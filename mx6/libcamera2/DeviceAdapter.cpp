@@ -101,7 +101,7 @@ sp<DeviceAdapter>DeviceAdapter::Create(const CameraInfo& info)
     else if (strstr(info.name, MT9P111_SENSOR_NAME)) {//add by allenyao
         FLOGI("DeviceAdapter: Create mt9p111_camera device");
         devAdapter = new mt9p111Csi();
-    }else if (strstr(info.name, HM5065_SENSOR_NAME)) {//add by allenyao
+    }else if (strstr(info.name, HM5065_SENSOR_NAME)) {
         FLOGI("DeviceAdapter: Create hm5065_camera device");
         devAdapter = new Hm5065Csi();
     }else {

@@ -18,7 +18,7 @@
 
 status_t Hm5065Csi::initSensorInfo(const CameraInfo& info)
 {
-	FLOG_RUNTIME("mt9p111 initSensorInfo");
+	FLOG_RUNTIME("Hm5065 initSensorInfo");
 
 	if (mCameraHandle < 0) {
 		FLOGE("OvDevice: initParameters sensor has not been opened");
@@ -71,7 +71,7 @@ status_t Hm5065Csi::initSensorInfo(const CameraInfo& info)
 		ret = ioctl(mCameraHandle,
 					VIDIOC_ENUM_FRAMESIZES, &vid_frmsize);
 		if (ret == 0) {
-			FLOG_RUNTIME("mt9p111 enum frame size w:%d, h:%d",
+			FLOG_RUNTIME("Hm5065 enum frame size w:%d, h:%d",
 						 vid_frmsize.discrete.width, vid_frmsize.discrete.height);
 			memset(&vid_frmval, 0, sizeof(struct v4l2_frmivalenum));
 			vid_frmval.index		= 0;
